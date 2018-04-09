@@ -3,10 +3,14 @@ package uk.ac.ebi.subs.validator.coordinator;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AssayDataValidationMessageEnvelopeExpander extends ValidationMessageEnvelopeExpander<AssayDataValidationMessageEnvelope> {
@@ -21,36 +25,25 @@ public class AssayDataValidationMessageEnvelopeExpander extends ValidationMessag
 
     @Override
     public void expandEnvelope(AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope) {
-        final AssayRef assayRef = assayDataValidationMessageEnvelope.getEntityToValidate().getAssayRef();
+        final List<AssayRef> assayRefs = assayDataValidationMessageEnvelope.getEntityToValidate().getAssayRefs();
+        final List<Submittable<uk.ac.ebi.subs.data.submittable.Assay>> assays = new ArrayList<>();
 
-        uk.ac.ebi.subs.repository.model.Assay assayStoredSubmittable;
+        for (AssayRef assayRef : assayRefs) {
+            uk.ac.ebi.subs.repository.model.Assay assayStoredSubmittable;
 
-        if (assayRef.getAccession() != null && !assayRef.getAccession().isEmpty()) {
-            assayStoredSubmittable = assayRepository.findFirstByAccessionOrderByCreatedDateDesc(assayRef.getAccession());
-        } else {
-            assayStoredSubmittable = assayRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(assayRef.getTeam(), assayRef.getAlias());
+            if (assayRef.getAccession() != null && !assayRef.getAccession().isEmpty()) {
+                assayStoredSubmittable = assayRepository.findFirstByAccessionOrderByCreatedDateDesc(assayRef.getAccession());
+            } else {
+                assayStoredSubmittable = assayRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(assayRef.getTeam(), assayRef.getAlias());
+            }
+
+            if (assayStoredSubmittable != null) {
+                Submittable<uk.ac.ebi.subs.data.submittable.Assay> assaySubmittable = new Submittable<>(assayStoredSubmittable, assayStoredSubmittable.getSubmission().getId());
+                assays.add(assaySubmittable);
+            }
         }
 
-        if (assayStoredSubmittable != null) {
-            Submittable<uk.ac.ebi.subs.data.submittable.Assay> assaySubmittable = new Submittable<>(assayStoredSubmittable,assayStoredSubmittable.getSubmission().getId());
-            assayDataValidationMessageEnvelope.setAssay(assaySubmittable);
-        }
-
-        final SampleRef sampleRef = assayDataValidationMessageEnvelope.getEntityToValidate().getSampleRef();
-
-        uk.ac.ebi.subs.repository.model.Sample sample;
-
-        if (sampleRef.getAccession() != null && !sampleRef.getAccession().isEmpty()) {
-            sample = sampleRepository.findFirstByAccessionOrderByCreatedDateDesc(sampleRef.getAccession());
-        } else {
-            sample = sampleRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(sampleRef.getTeam(), sampleRef.getAlias());
-        }
-
-        if (sample != null) {
-            Submittable<uk.ac.ebi.subs.data.submittable.Sample> sampleSubmittable = new Submittable<>(sample,sample.getSubmission().getId());
-            assayDataValidationMessageEnvelope.setSample(sampleSubmittable);
-        }
-
+        assayDataValidationMessageEnvelope.setAssays(assays);
     }
 
 
