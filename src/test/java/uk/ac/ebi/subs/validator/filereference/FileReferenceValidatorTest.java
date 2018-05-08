@@ -122,7 +122,7 @@ public class FileReferenceValidatorTest {
     public void whenFileMetadataReferenceAFileThatIsNotInStorage_ThenAssayDataValidationShouldFail() {
         SingleValidationResult singleValidationResultAssayData1 = createSingleValidationResult(
                 ASSAYDATA_IDS[0], SingleValidationResultStatus.Error,
-                String.format(FileReferenceValidator.FILE_METADATA_NOT_EXISTS_AS_UPLOADED_FILE, String.join(PATH_SEPARATOR, TARGET_BASE_PATH, FILENAMES[0]))
+                String.format(FileReferenceValidator.FILE_METADATA_NOT_EXISTS_AS_UPLOADED_FILE, FILENAMES[0])
         );
 
         given(this.fileRepository.findBySubmissionId(SUBMISSION_ID))
@@ -181,14 +181,16 @@ public class FileReferenceValidatorTest {
         file.setId(fileId);
         file.setSubmissionId(SUBMISSION_ID);
         file.setFilename(filename);
-        file.setTargetPath(String.join(PATH_SEPARATOR, targetPathBase, filename));
+        file.setTargetPath(String.join(
+                PATH_SEPARATOR, targetPathBase,
+                FileReferenceValidator.buildBaseFilePathBySubmissionID(SUBMISSION_ID), filename));
 
         return file;
     }
 
     private uk.ac.ebi.subs.data.component.File createFileMetadata(String filename, String targetPathBase) {
         uk.ac.ebi.subs.data.component.File file = new uk.ac.ebi.subs.data.component.File();
-        file.setName(String.join(PATH_SEPARATOR, targetPathBase,filename));
+        file.setName(filename);
         file.setChecksum("1234567890abcdefabcd1234567890ab");
 
         return file;
@@ -200,4 +202,5 @@ public class FileReferenceValidatorTest {
         result.setMessage(message);
         return result;
     }
+
 }
