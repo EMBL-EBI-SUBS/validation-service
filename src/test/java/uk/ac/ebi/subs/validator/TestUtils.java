@@ -2,14 +2,22 @@ package uk.ac.ebi.subs.validator;
 
 import uk.ac.ebi.subs.data.component.File;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
+import uk.ac.ebi.subs.validator.util.BlankValidationResultMaps;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -74,5 +82,52 @@ public final class TestUtils {
         assayData.setFiles(files);
 
         return assayData;
+    }
+
+    public static uk.ac.ebi.subs.repository.model.fileupload.File createFile() {
+        uk.ac.ebi.subs.repository.model.fileupload.File file = new uk.ac.ebi.subs.repository.model.fileupload.File();
+        file.setId(UUID.randomUUID().toString());
+        file.setStatus(FileStatus.READY_FOR_ARCHIVE);
+        file.setFilename("test_1.fastq.gz");
+        file.setChecksum("12345678901234567890abcdeabcde12");
+        file.setSubmissionId("Test_submissionId");
+
+        return file;
+    }
+
+    public static ValidationResult createValidationResultForFileWithExistingFileContentAndFileReferenceValidationResults(String fileUUID) {
+        ValidationResult validationResult = createValidationResult(fileUUID);
+
+        Map<ValidationAuthor, List<SingleValidationResult>> expectedResults = BlankValidationResultMaps.forFile();
+
+        SingleValidationResult fileContentValidationResult1 =
+                buildSingleValidationResult(fileUUID, ValidationAuthor.FileContent, "This is an error message");
+        SingleValidationResult fileContentValidationResult2 =
+                buildSingleValidationResult(fileUUID, ValidationAuthor.FileContent, "This is another error message");
+
+        List<SingleValidationResult> fileContentValidationResults =
+                Arrays.asList(fileContentValidationResult1, fileContentValidationResult2);
+        expectedResults.put(ValidationAuthor.FileContent, fileContentValidationResults);
+
+        SingleValidationResult fileReferenceValidationResult1 =
+                buildSingleValidationResult(fileUUID, ValidationAuthor.FileReference, "This is a file reference error message");
+
+        List<SingleValidationResult> fileReferenceValidationResults =
+                Collections.singletonList(fileReferenceValidationResult1);
+        expectedResults.put(ValidationAuthor.FileReference, fileReferenceValidationResults);
+
+        validationResult.setExpectedResults(expectedResults);
+
+        return validationResult;
+    }
+
+    private static SingleValidationResult buildSingleValidationResult(String entityUUID, ValidationAuthor validationAuthor,
+                                                                      String errorMessage) {
+        SingleValidationResult fileContentValidationResult1 = new SingleValidationResult();
+        fileContentValidationResult1.setEntityUuid(entityUUID);
+        fileContentValidationResult1.setValidationAuthor(validationAuthor);
+        fileContentValidationResult1.setValidationStatus(SingleValidationResultStatus.Error);
+        fileContentValidationResult1.setMessage(errorMessage);
+        return fileContentValidationResult1;
     }
 }

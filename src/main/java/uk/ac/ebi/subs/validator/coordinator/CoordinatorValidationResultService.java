@@ -10,11 +10,15 @@ import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.util.BlankValidationResultMaps;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -99,7 +103,15 @@ public class CoordinatorValidationResultService {
 
         if (optionalValidationResult.isPresent()) {
             validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forFile());
+
+            List<SingleValidationResult> fileContentValidationResults =
+                    validationResult.getExpectedResults().get(ValidationAuthor.FileContent);
+
+            Map<ValidationAuthor, List<SingleValidationResult>> expectedResultsForFile =
+                    BlankValidationResultMaps.forFile();
+            expectedResultsForFile.put(ValidationAuthor.FileContent, fileContentValidationResults);
+
+            validationResult.setExpectedResults(expectedResultsForFile);
 
             repository.save(validationResult);
         }
