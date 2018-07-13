@@ -2,17 +2,27 @@ package uk.ac.ebi.subs.validator.coordinator;
 
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.ProjectRef;
+import uk.ac.ebi.subs.data.component.ProtocolRef;
+import uk.ac.ebi.subs.data.submittable.Protocol;
 import uk.ac.ebi.subs.repository.model.Project;
+
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnvelopeExpander<StudyValidationMessageEnvelope> {
-    ProjectRepository projectRepository;
 
-    public StudyValidationMessageEnvelopeExpander(ProjectRepository projectRepository) {
+    ProjectRepository projectRepository;
+    ProtocolRepository protocolRepository;
+
+    public StudyValidationMessageEnvelopeExpander(ProjectRepository projectRepository, ProtocolRepository protocolRepository) {
         this.projectRepository = projectRepository;
+        this.protocolRepository = protocolRepository;
     }
 
     @Override
@@ -32,6 +42,20 @@ public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnv
             Submittable<uk.ac.ebi.subs.data.submittable.Project> projectSubmittable = new Submittable<>(project, project.getSubmission().getId());
             validationMessageEnvelope.setProject(projectSubmittable);
         }
+
+        List<ProtocolRef> protocolRefs = validationMessageEnvelope.getEntityToValidate().getProtocolRefs();
+        List<Protocol> protocols = new ArrayList<>();
+
+        for(ProtocolRef protocolRef :protocolRefs){
+            Protocol protocol;
+            if (protocolRef != null && protocolRef.getAccession() != null && !protocolRef.getAccession().isEmpty()) {
+                protocol = protocolRepository.findFirstByAccessionOrderByCreatedDateDesc(protocolRef.getAccession());
+            } else {
+                protocol = protocolRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(protocolRef.getTeam(), protocolRef.getAlias());
+            }
+            protocols.add(protocol);
+        }
+        validationMessageEnvelope.setProtocols(protocols);
 
     }
 }
