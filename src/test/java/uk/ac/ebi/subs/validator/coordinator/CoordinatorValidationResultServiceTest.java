@@ -11,10 +11,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.validator.TestUtils;
 import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = ValidationResultRepository.class)
@@ -49,5 +58,24 @@ public class CoordinatorValidationResultServiceTest {
         }
 
         Assert.assertEquals(5, validationResult.getVersion());
+    }
+
+    @Test
+    public void validationResultShouldPreserveForFileContentValidation() {
+        File file = TestUtils.createFile();
+
+        final ValidationResult existingValidationResult =
+                TestUtils.createValidationResultForFileWithExistingFileContentAndFileReferenceValidationResults(file.getId());
+        repository.save(existingValidationResult);
+
+        Map<ValidationAuthor, List<SingleValidationResult>> expectedResults = existingValidationResult.getExpectedResults();
+        assertThat(expectedResults.get(ValidationAuthor.FileReference), hasSize(1));
+        assertThat(expectedResults.get(ValidationAuthor.FileContent), hasSize(2));
+
+        ValidationResult resetValidationResult = service.fetchValidationResultDocument(file).get();
+
+        expectedResults = resetValidationResult.getExpectedResults();
+        assertThat(expectedResults.get(ValidationAuthor.FileReference), hasSize(0));
+        assertThat(expectedResults.get(ValidationAuthor.FileContent), hasSize(2));
     }
 }
