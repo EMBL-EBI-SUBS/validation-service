@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.7.2-SNAPSHOT'
+version '2.7.3-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
