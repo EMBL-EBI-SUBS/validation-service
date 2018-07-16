@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.fileupload.File;
+import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Project;
@@ -91,6 +92,19 @@ public class CoordinatorValidationResultService {
         if (optionalValidationResult.isPresent()) {
             validationResult = optionalValidationResult.get();
             validationResult.setExpectedResults(BlankValidationResultMaps.forAssayData());
+
+            repository.save(validationResult);
+        }
+        return Optional.ofNullable(validationResult);
+    }
+
+    public Optional<ValidationResult> fetchValidationResultDocument(Analysis analysis) {
+        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(analysis);
+        ValidationResult validationResult = null;
+
+        if (optionalValidationResult.isPresent()) {
+            validationResult = optionalValidationResult.get();
+            validationResult.setExpectedResults(BlankValidationResultMaps.forAnalysis());
 
             repository.save(validationResult);
         }
