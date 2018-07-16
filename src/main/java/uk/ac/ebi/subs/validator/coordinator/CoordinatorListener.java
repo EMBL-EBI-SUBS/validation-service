@@ -166,10 +166,10 @@ public class CoordinatorListener {
         Analysis analysis = envelope.getEntityToValidate();
 
         if (analysis == null) {
-            throw new IllegalArgumentException("The envelope should contain an analysis data.");
+            throw new IllegalArgumentException("The envelope should contain an analysis.");
         }
 
-        logger.info("Received validation request on assay data {}", analysis.getId());
+        logger.info("Received validation request on analysis {}", analysis.getId());
 
         if (!submittableHandler.handleSubmittable(analysis,envelope.getSubmissionId())) {
             logger.error("Error handling analysis with id {}", analysis.getId());
