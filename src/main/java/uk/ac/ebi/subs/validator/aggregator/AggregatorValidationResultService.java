@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 @Service
 public class AggregatorValidationResultService {
@@ -19,18 +21,24 @@ public class AggregatorValidationResultService {
 
     public boolean updateValidationResult(SingleValidationResultsEnvelope envelope) {
 
-        Query query = new Query(Criteria.where("_id").is(envelope.getValidationResultUUID())
-                .and("version").is(envelope.getValidationResultVersion()));
+        final boolean isFileContentValidation = envelope.getValidationAuthor().equals(ValidationAuthor.FileContent);
+
+        Query query = new Query(Criteria.where("_id").is(envelope.getValidationResultUUID()));
+
+        if (!isFileContentValidation) {
+            query.addCriteria(Criteria.where("version").is(envelope.getValidationResultVersion()));
+        }
 
         Update update = new Update().set("expectedResults." + envelope.getValidationAuthor(), envelope.getSingleValidationResults());
 
         ValidationResult validationResult = mongoTemplate.findAndModify(query, update, ValidationResult.class);
 
-        if(validationResult != null) {
-            return true;
-        } else {
-            return false;
+        if (isFileContentValidation) {
+            validationResult.setValidationStatus(GlobalValidationStatus.Complete);
+            mongoTemplate.save(validationResult);
         }
+
+        return validationResult != null;
     }
 
 }

@@ -89,6 +89,7 @@ public class AggregatorValidationResultServiceTest {
     public void handleDeletedSubmittable() {
         SingleValidationResultsEnvelope envelope = new SingleValidationResultsEnvelope();
         envelope.setValidationResultUUID("missing");
+        envelope.setValidationAuthor(ValidationAuthor.Biosamples);
 
         assertFalse(service.updateValidationResult(envelope));
     }
