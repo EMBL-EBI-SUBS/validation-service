@@ -13,15 +13,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.data.component.ProjectRef;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Project;
+import uk.ac.ebi.subs.repository.model.Protocol;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 
+import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
@@ -43,17 +47,22 @@ public class StudyValidationMessageEnvelopeExpanderTest {
     SubmissionRepository submissionRepository;
 
     @Autowired
+    ProtocolRepository protocolRepository;
+
+    @Autowired
     StudyValidationMessageEnvelopeExpander studyValidationMessageEnvelopeExpander;
 
     Team team;
     Submission submission;
     Project savedProject;
+    List<Protocol> savedProtocols;
 
     @Before
     public void setup() {
         team = MesssageEnvelopeTestHelper.createTeam();
         submission= MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository,submissionRepository,team);
         savedProject = createAndSaveProject(submission,team);
+        savedProtocols = createAndSaveProtocols(team);
     }
 
     @After
@@ -86,6 +95,15 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     }
 
+    @Test
+    public void testExpandEnvelopeWithProtocols() throws Exception {
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope();
+        studyValidationMessageEnvelope.getEntityToValidate().setProtocolRefs(MesssageEnvelopeTestHelper.createProtocolRefs(savedProtocols));
+        studyValidationMessageEnvelopeExpander.expandEnvelope(studyValidationMessageEnvelope);
+        assertEquals(savedProtocols.size(),studyValidationMessageEnvelope.getProtocols().size());
+        assertThat(savedProtocols.get(0).getAlias(),is(studyValidationMessageEnvelope.getProtocols().get(0).getAlias()));
+    }
+
     private StudyValidationMessageEnvelope createStudyValidationMessageEnvelope() {
         StudyValidationMessageEnvelope studyValidationMessageEnvelope = new StudyValidationMessageEnvelope();
         uk.ac.ebi.subs.data.submittable.Study submittableStudy = new uk.ac.ebi.subs.data.submittable.Study();
@@ -106,5 +124,12 @@ public class StudyValidationMessageEnvelopeExpanderTest {
         project.setSubmission(submission);
         return projectRepository.save(project);
     }
+
+
+    private List<Protocol> createAndSaveProtocols(Team team) {
+        List<Protocol> protocols = MesssageEnvelopeTestHelper.createProtocols(team, 3);
+        return protocolRepository.save(protocols);
+    }
+
 
 }

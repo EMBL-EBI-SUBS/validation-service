@@ -1,8 +1,10 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import uk.ac.ebi.subs.data.component.AbstractSubsRef;
+import uk.ac.ebi.subs.data.component.ProtocolRef;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.model.Protocol;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
@@ -61,5 +63,25 @@ public class MesssageEnvelopeTestHelper {
         return sampleList;
     }
 
+    static List<Protocol> createProtocols (Team team, int protocolNumber) {
+        List<Protocol> protocols = new ArrayList<>(protocolNumber);
+        for (int i = 0; i < protocolNumber; i++ ) {
+            Protocol protocol = new Protocol();
+            protocol.setAccession(UUID.randomUUID().toString());
+            protocol.setAlias(UUID.randomUUID().toString());
+            protocol.setTitle("Sample collection");
+            protocol.setDescription("Test collection");
+            protocol.setTeam(team);
+            protocols.add(protocol);
+        }
+        return protocols;
+    }
 
+    static List<ProtocolRef> createProtocolRefs(List<Protocol> protocols){
+        List<ProtocolRef> refs = new ArrayList<>();
+        for(Protocol protocol : protocols){
+            refs.add((ProtocolRef) protocol.asRef());
+        }
+        return refs;
+    }
 }
