@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.StudyRef;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AnalysisValidationMessageEnvelopeExpander extends ValidationMessageEnvelopeExpander<AnalysisValidationEnvelope> {
 
     @NonNull

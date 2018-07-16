@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
@@ -44,6 +45,7 @@ import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_STUDY_VALIDATION;
 
 @Component
+@RequiredArgsConstructor
 public class SubmittableHandler {
     private static final Logger logger = LoggerFactory.getLogger(SubmittableHandler.class);
 
