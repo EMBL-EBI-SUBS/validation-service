@@ -18,6 +18,14 @@ public class CoordinatorRoutingKeys {
 
     public static final String EVENT_BIOSTUDIES_PROJECT_VALIDATION = "biostudies.project.validation";
 
+    public static final String EVENT_METABOLIGHTS_SAMPLE_VALIDATION = "metabolights.sample.validation";
+
+    public static final String EVENT_METABOLIGHTS_STUDY_VALIDATION = "metabolights.study.validation";
+
+    public static final String EVENT_METABOLIGHTS_ASSAY_VALIDATION = "metabolights.assay.validation";
+
+    public static final String EVENT_METABOLIGHTS_ASSAYDATA_VALIDATION = "metabolights.assaydata.validation";
+
     public static final String EVENT_FILE_CREATED = "usi.file.created";
     public static final String EVENT_FILE_REF_VALIDATION = "file.reference.validation";
     public static final String EVENT_FILE_DELETED = "file.deleted.validation";
