@@ -10,8 +10,13 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.ac.ebi.subs.data.component.*;
-import uk.ac.ebi.subs.repository.model.*;
+import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.component.StudyRef;
+import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.Study;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -20,14 +25,12 @@ import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = {SampleRepository.class, StudyRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
@@ -60,7 +63,7 @@ public class AssayValidationMessageEnvelopeExpanderTest {
     public void setup() {
         team = MesssageEnvelopeTestHelper.createTeam();
         submission = MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
-        savedStudy = createAndSaveStudy(submission,team);
+        savedStudy = MesssageEnvelopeTestHelper.createAndSaveStudy(studyRepository, submission, team);
         savedSampleList = MesssageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1);
     }
 
@@ -80,7 +83,7 @@ public class AssayValidationMessageEnvelopeExpanderTest {
         studyRef.setAccession(savedStudy.getAccession());
         assayValidationMessageEnvelope.getEntityToValidate().setStudyRef(studyRef);
         assayValidatorMessageEnvelopeExpander.expandEnvelope(assayValidationMessageEnvelope);
-        assertThat(savedStudy,is(assayValidationMessageEnvelope.getStudy().getBaseSubmittable()));
+        assertThat(savedStudy, is(assayValidationMessageEnvelope.getStudy().getBaseSubmittable()));
     }
 
     @Test
@@ -106,7 +109,7 @@ public class AssayValidationMessageEnvelopeExpanderTest {
         studyRef.setTeam(savedStudy.getTeam().getName());
         assayValidationMessageEnvelope.getEntityToValidate().setStudyRef(studyRef);
         assayValidatorMessageEnvelopeExpander.expandEnvelope(assayValidationMessageEnvelope);
-        assertThat(savedStudy,is(assayValidationMessageEnvelope.getStudy().getBaseSubmittable()));
+        assertThat(savedStudy, is(assayValidationMessageEnvelope.getStudy().getBaseSubmittable()));
     }
 
     @Test
@@ -133,17 +136,6 @@ public class AssayValidationMessageEnvelopeExpanderTest {
         submittableAssay.setAlias(UUID.randomUUID().toString());
         assayValidationMessageEnvelope.setEntityToValidate(submittableAssay);
         return assayValidationMessageEnvelope;
-    }
-
-    private Study createAndSaveStudy (Submission submission, Team team) {
-        Study study = new Study();
-        study.setTeam(team);
-        String projectAccession = UUID.randomUUID().toString();
-        String projectAlias = UUID.randomUUID().toString();
-        study.setAlias(projectAlias);
-        study.setAccession(projectAccession);
-        study.setSubmission(submission);
-        return studyRepository.save(study);
     }
 
 }
