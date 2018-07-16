@@ -16,6 +16,10 @@ public class CoordinatorRoutingKeys {
     public static final String EVENT_CORE_ASSAYDATA_VALIDATION = "core.assaydata.validation";
     public static final String EVENT_ENA_ASSAYDATA_VALIDATION = "ena.assaydata.validation";
 
+    public static final String EVENT_CORE_ANALYSIS_VALIDATION = "core.analysis.validation";
+    public static final String EVENT_ENA_ANALYSIS_VALIDATION = "ena.analysis.validation";
+
+
     public static final String EVENT_BIOSTUDIES_PROJECT_VALIDATION = "biostudies.project.validation";
 
     public static final String EVENT_FILE_CREATED = "usi.file.created";
