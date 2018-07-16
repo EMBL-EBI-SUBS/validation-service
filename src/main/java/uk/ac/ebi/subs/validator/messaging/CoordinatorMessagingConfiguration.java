@@ -165,6 +165,22 @@ public class CoordinatorMessagingConfiguration {
                 .with(SUBMITTABLE_PROJECT_UPDATED);
     }
 
+    @Bean
+    Queue submissionAnalysisValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_ANALYSIS_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedAnalysisSubmissionBinding(Queue submissionAnalysisValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(submissionAnalysisValidatorQueue).to(submissionExchange)
+                .with(SUBMITTABLE_ANALYSIS_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedAnalysisSubmissionBinding(Queue submissionAnalysisValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(submissionAnalysisValidatorQueue).to(submissionExchange)
+                .with(SUBMITTABLE_ANALYSIS_UPDATED);
+    }
+
+
     /**
      * Instantiate a {@link Queue} for validate file reference existence.
      *

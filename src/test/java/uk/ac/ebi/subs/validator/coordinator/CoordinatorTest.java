@@ -59,7 +59,7 @@ public class CoordinatorTest {
 
     @Test
     public void testSubmissionWithoutContent() {
-        String expectedErrorMessage = "The envelop should contain a sample.";
+        String expectedErrorMessage = "The envelope should contain a sample.";
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage(expectedErrorMessage);
 
