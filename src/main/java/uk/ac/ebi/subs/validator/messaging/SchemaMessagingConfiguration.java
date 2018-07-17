@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.subs.messaging.ExchangeConfig;
 import uk.ac.ebi.subs.messaging.Queues;
 
+import static uk.ac.ebi.subs.validator.messaging.SchemaQueues.SCHEMA_ANALYSIS_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaQueues.SCHEMA_ASSAYDATA_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaQueues.SCHEMA_ASSAY_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaQueues.SCHEMA_SAMPLE_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaQueues.SCHEMA_STUDY_VALIDATION;
+import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_ANALYSIS_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_ASSAYDATA_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_ASSAY_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_SAMPLE_VALIDATION;
@@ -61,5 +63,14 @@ public class SchemaMessagingConfiguration {
     @Bean
     public Binding schemaAssayDataValidationBinding(Queue schemaAssayDataValidationQueue, TopicExchange submissionExchange) {
         return BindingBuilder.bind(schemaAssayDataValidationQueue).to(submissionExchange).with(EVENT_SCHEMA_ASSAYDATA_VALIDATION);
+    }
+
+    @Bean Queue schemaAnalysisValidationQueue(){
+        return Queues.buildQueueWithDlx(SCHEMA_ANALYSIS_VALIDATION);
+    }
+
+    @Bean
+    public Binding schemaAnalysisValidationBinding(Queue schemaAnalysisValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(schemaAnalysisValidationQueue).to(submissionExchange).with(EVENT_SCHEMA_ANALYSIS_VALIDATION);
     }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
@@ -38,6 +39,8 @@ public class JsonSchemaValidationHandler {
     private String assaySchemaUrl;
     @Value("${assaydata.schema.url}")
     private String assayDataSchemaUrl;
+    @Value("${eva.seqvar.analysis.schema.url}")
+    private String evaSeqVarAnalysisSchemaUrl;
 
     private JsonSchemaValidationService validationService;
     private SchemaService schemaService;
@@ -86,6 +89,16 @@ public class JsonSchemaValidationHandler {
         JsonNode assayDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), assayDataSchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assayDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
+        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
+
+        return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
+                envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
+    }
+
+    public SingleValidationResultsEnvelope handleAnalysisValidation(AnalysisValidationEnvelope envelope)  {
+        JsonNode analysisDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), evaSeqVarAnalysisSchemaUrl); // TODO - handle logic on which schema to use for validation
+
+        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(analysisDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
 
         return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),

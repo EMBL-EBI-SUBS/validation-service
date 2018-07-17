@@ -12,4 +12,6 @@ public class SchemaQueues {
     public static final String SCHEMA_SAMPLE_VALIDATION = "schema-sample-validation";
 
     public static final String SCHEMA_STUDY_VALIDATION = "schema-study-validation";
+
+    public static final String SCHEMA_ANALYSIS_VALIDATION = "schema-analysis-validation";
 }
