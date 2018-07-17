@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Sample;
@@ -22,6 +23,7 @@ public class SchemaServiceTest {
     private String sampleSchemaUrl = schemaRootUrl + "/sample/sample-schema.json";
     private String assaySchemaUrl = schemaRootUrl + "/assay/assay-schema.json";
     private String assayDataSchemaUrl = schemaRootUrl + "/assaydata/assaydata-schema.json";
+    private String evaSeqVarSchemaUrl = schemaRootUrl + "/analysis/eva-sequence-variation-schema.json";
 
     private RestTemplate restTemplate = new RestTemplate();
     private SchemaService schemaService;
@@ -54,5 +56,11 @@ public class SchemaServiceTest {
     public void getSchemaForAssayData() {
         JsonNode assayDataSchema = schemaService.getSchemaFor(AssayData.class.getTypeName(), assayDataSchemaUrl);
         assertThat(assayDataSchema.get("title").asText(), is("Submissions Assay Data Schema"));
+    }
+
+    @Test
+    public void getSchemaForEvaSeqVarAnalysis() {
+        JsonNode analysisDataSchema = schemaService.getSchemaFor(Analysis.class.getTypeName(), evaSeqVarSchemaUrl);
+        assertThat(analysisDataSchema.get("title").asText(), is("EVA Sequence variation checklist"));
     }
 }
