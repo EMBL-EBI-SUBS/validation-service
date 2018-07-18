@@ -1,14 +1,18 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import uk.ac.ebi.subs.data.component.AbstractSubsRef;
+import uk.ac.ebi.subs.data.component.ProtocolRef;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.model.Protocol;
 import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,5 +65,36 @@ public class MesssageEnvelopeTestHelper {
         return sampleList;
     }
 
+    static List<Protocol> createProtocols (Team team, int protocolNumber) {
+        List<Protocol> protocols = new ArrayList<>(protocolNumber);
+        for (int i = 0; i < protocolNumber; i++ ) {
+            Protocol protocol = new Protocol();
+            protocol.setAccession(UUID.randomUUID().toString());
+            protocol.setAlias(UUID.randomUUID().toString());
+            protocol.setTitle("Sample collection");
+            protocol.setDescription("Test collection");
+            protocol.setTeam(team);
+            protocols.add(protocol);
+        }
+        return protocols;
+    }
 
+    static List<ProtocolRef> createProtocolRefs(List<Protocol> protocols){
+        List<ProtocolRef> refs = new ArrayList<>();
+        for(Protocol protocol : protocols){
+            refs.add((ProtocolRef) protocol.asRef());
+        }
+        return refs;
+    }
+
+    public static Study createAndSaveStudy (StudyRepository studyRepository, Submission submission, Team team) {
+        Study study = new Study();
+        study.setTeam(team);
+        String projectAccession = UUID.randomUUID().toString();
+        String projectAlias = UUID.randomUUID().toString();
+        study.setAlias(projectAlias);
+        study.setAccession(projectAccession);
+        study.setSubmission(submission);
+        return studyRepository.save(study);
+    }
 }

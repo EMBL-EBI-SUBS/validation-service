@@ -4,17 +4,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.fileupload.File;
+import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.util.BlankValidationResultMaps;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -93,13 +98,34 @@ public class CoordinatorValidationResultService {
         return Optional.ofNullable(validationResult);
     }
 
+    public Optional<ValidationResult> fetchValidationResultDocument(Analysis analysis) {
+        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(analysis);
+        ValidationResult validationResult = null;
+
+        if (optionalValidationResult.isPresent()) {
+            validationResult = optionalValidationResult.get();
+            validationResult.setExpectedResults(BlankValidationResultMaps.forAnalysis());
+
+            repository.save(validationResult);
+        }
+        return Optional.ofNullable(validationResult);
+    }
+
     public Optional<ValidationResult> fetchValidationResultDocument(File file) {
         Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(file);
         ValidationResult validationResult = null;
 
         if (optionalValidationResult.isPresent()) {
             validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forFile());
+
+            List<SingleValidationResult> fileContentValidationResults =
+                    validationResult.getExpectedResults().get(ValidationAuthor.FileContent);
+
+            Map<ValidationAuthor, List<SingleValidationResult>> expectedResultsForFile =
+                    BlankValidationResultMaps.forFile();
+            expectedResultsForFile.put(ValidationAuthor.FileContent, fileContentValidationResults);
+
+            validationResult.setExpectedResults(expectedResultsForFile);
 
             repository.save(validationResult);
         }

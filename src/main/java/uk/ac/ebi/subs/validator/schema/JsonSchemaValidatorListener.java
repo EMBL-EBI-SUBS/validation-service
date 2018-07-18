@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
@@ -62,6 +63,14 @@ public class JsonSchemaValidatorListener {
         logger.debug("AssayData validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
         SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleAssayDataValidation(envelope);
+        sendResults(resultsEnvelope);
+    }
+
+    @RabbitListener(queues = SchemaQueues.SCHEMA_ANALYSIS_VALIDATION)
+    public void handleAnalysisValidationRequest(AnalysisValidationEnvelope envelope) {
+        logger.debug("Analysis validation request received with ID: {}.", envelope.getEntityToValidate().getId());
+
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleAnalysisValidation(envelope);
         sendResults(resultsEnvelope);
     }
 

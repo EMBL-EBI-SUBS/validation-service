@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.validator.data.AggregatorToFlipperEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.messaging.AggregatorQueues;
 import uk.ac.ebi.subs.validator.messaging.AggregatorRoutingKeys;
 
@@ -40,6 +41,11 @@ public class AggregatorListener {
 
         logger.debug("Trying to update Validation Result Document in MongoDB...");
         boolean success = aggregatorValidationResultService.updateValidationResult(singleValidationResultsEnvelope);
+
+        if (singleValidationResultsEnvelope.getValidationAuthor().equals(ValidationAuthor.FileContent)) {
+            logger.debug("File Content Validation finished. No need to send message to the Status Flipper component.");
+            return;
+        }
 
         if(success) {
             sendValidationResultDocumentUpdate(singleValidationResultsEnvelope);

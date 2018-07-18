@@ -13,4 +13,6 @@ public class SchemaRoutingKeys {
 
     public static final String EVENT_SCHEMA_ASSAYDATA_VALIDATION = "schema.assaydata.validation";
 
+    public static final String EVENT_SCHEMA_ANALYSIS_VALIDATION = "schema.analysis.validation";
+
 }
