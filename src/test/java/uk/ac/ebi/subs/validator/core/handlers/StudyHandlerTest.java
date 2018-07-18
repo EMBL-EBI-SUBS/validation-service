@@ -66,7 +66,7 @@ public class StudyHandlerTest {
         study = new Study();
         study.setId(studyId);
         study.setProjectRef(projectRef);
-        study.setStudyType(StudyDataType.Metabolomics);
+        study.setStudyType(StudyDataType.Metabolomics_MS);
 
         //reference data for the envelope
         Project project = new Project();
