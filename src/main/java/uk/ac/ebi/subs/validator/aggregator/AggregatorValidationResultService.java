@@ -34,8 +34,7 @@ public class AggregatorValidationResultService {
         ValidationResult validationResult = mongoTemplate.findAndModify(query, update, ValidationResult.class);
 
         if (validationResult != null && isFileContentValidation) {
-            validationResult.setValidationStatus(GlobalValidationStatus.Complete);
-            mongoTemplate.save(validationResult);
+            envelope.setValidationResultVersion(validationResult.getVersion());
         }
 
         return validationResult != null;
