@@ -123,7 +123,9 @@ public class CoordinatorValidationResultService {
 
             Map<ValidationAuthor, List<SingleValidationResult>> expectedResultsForFile =
                     BlankValidationResultMaps.forFile();
-            expectedResultsForFile.put(ValidationAuthor.FileContent, fileContentValidationResults);
+            if (fileContentValidationResults != null) {
+                expectedResultsForFile.put(ValidationAuthor.FileContent, fileContentValidationResults);
+            }
 
             validationResult.setExpectedResults(expectedResultsForFile);
 
