@@ -42,11 +42,6 @@ public class AggregatorListener {
         logger.debug("Trying to update Validation Result Document in MongoDB...");
         boolean success = aggregatorValidationResultService.updateValidationResult(singleValidationResultsEnvelope);
 
-        if (singleValidationResultsEnvelope.getValidationAuthor().equals(ValidationAuthor.FileContent)) {
-            logger.debug("File Content Validation finished. No need to send message to the Status Flipper component.");
-            return;
-        }
-
         if(success) {
             sendValidationResultDocumentUpdate(singleValidationResultsEnvelope);
         } else {
