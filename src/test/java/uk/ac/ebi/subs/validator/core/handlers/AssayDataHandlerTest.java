@@ -52,7 +52,7 @@ public class AssayDataHandlerTest {
     public void buildUp() {
 
         //setup the handler
-        assayDataHandler = new AssayDataHandler(referenceValidator, attributeValidator, fileReferenceValidator);
+        assayDataHandler = new AssayDataHandler(referenceValidator, attributeValidator);
 
         //refs
         assayRef = new AssayRef();

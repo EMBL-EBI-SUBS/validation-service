@@ -38,7 +38,7 @@ public class AssayHandler extends AbstractHandler<AssayValidationMessageEnvelope
 
     @Override
     List<SingleValidationResult> validateSubmittable(AssayValidationMessageEnvelope envelope) {
-        Assay assay = getAssayFromEnvelope(envelope);
+        Assay assay = envelope.getEntityToValidate();
 
         List<SingleValidationResult> results = new ArrayList<>();
 
@@ -62,13 +62,9 @@ public class AssayHandler extends AbstractHandler<AssayValidationMessageEnvelope
     }
 
     @Override
-    List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope) {
-        Assay assay = getAssayFromEnvelope(envelope);
+    List<SingleValidationResult> validateAttributes(AssayValidationMessageEnvelope envelope) {
+        Assay assay = envelope.getEntityToValidate();
 
         return ValidatorHelper.validateAttribute(assay.getAttributes(), assay.getId(), attributeValidator);
-    }
-
-    private Assay getAssayFromEnvelope(ValidationMessageEnvelope envelope) {
-        return (Assay) envelope.getEntityToValidate();
     }
 }

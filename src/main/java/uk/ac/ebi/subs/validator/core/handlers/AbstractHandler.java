@@ -16,7 +16,7 @@ public abstract class AbstractHandler<T extends ValidationMessageEnvelope> {
 
     abstract List<SingleValidationResult> validateSubmittable(T envelope);
 
-    abstract List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope);
+    abstract List<SingleValidationResult> validateAttributes(T envelope);
 
     public SingleValidationResultsEnvelope handleValidationRequest(T envelope) {
         List<SingleValidationResult> resultList = new ArrayList<>();
