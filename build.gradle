@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.12.2-SNAPSHOT'
+version '2.12.3-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -50,7 +50,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile("uk.ac.ebi.subs:subs-processing-model:2.3.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.7.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.7.2-SNAPSHOT")
     testCompile("org.springframework.boot:spring-boot-starter-test")
 
     compileOnly("org.projectlombok:lombok:1.16.18")
