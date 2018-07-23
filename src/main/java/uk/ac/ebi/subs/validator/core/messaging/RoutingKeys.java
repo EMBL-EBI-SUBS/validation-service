@@ -13,4 +13,6 @@ public class RoutingKeys {
     public static final String EVENT_CORE_SAMPLE_VALIDATION = "core.sample.validation";
 
     public static final String EVENT_CORE_STUDY_VALIDATION = "core.study.validation";
+
+    public static final String EVENT_CORE_ANALYSIS_VALIDATION = "core.analysis.validation";
 }

@@ -54,4 +54,14 @@ public class MessagingConfiguration {
     public Binding coreStudyValidationBinding(Queue coreStudyValidationQueue, TopicExchange submissionExchange) {
         return BindingBuilder.bind(coreStudyValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_STUDY_VALIDATION);
     }
+
+    @Bean
+    public Queue coreAnalysisValidationQueue() {
+        return buildQueueWithDlx(Queues.CORE_ANALYSIS_VALIDATION);
+    }
+
+    @Bean
+    public Binding coreAnalysisValidationBinding(Queue coreAnalysisValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(coreAnalysisValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_ANALYSIS_VALIDATION);
+    }
 }
