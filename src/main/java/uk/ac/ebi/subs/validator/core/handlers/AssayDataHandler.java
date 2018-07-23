@@ -9,8 +9,6 @@ import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
-import uk.ac.ebi.subs.validator.filereference.FileReferenceValidator;
 
 import java.util.List;
 
@@ -28,12 +26,10 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     private ReferenceValidator refValidator;
     @NonNull
     private AttributeValidator attributeValidator;
-    @NonNull
-    private FileReferenceValidator fileReferenceValidator;
 
     @Override
     List<SingleValidationResult> validateSubmittable(AssayDataValidationMessageEnvelope envelope) {
-        AssayData assayData = getAssayDataFromEnvelope(envelope);
+        AssayData assayData = envelope.getEntityToValidate();
 
         return refValidator.validate(
                 assayData.getId(),
@@ -43,14 +39,9 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     }
 
     @Override
-    List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope) {
-        AssayData assayData = getAssayDataFromEnvelope(envelope);
-
+    List<SingleValidationResult> validateAttributes(AssayDataValidationMessageEnvelope envelope) {
+        AssayData assayData = envelope.getEntityToValidate();
         return ValidatorHelper.validateAttribute(assayData.getAttributes(), assayData.getId(), attributeValidator);
-    }
-
-    private AssayData getAssayDataFromEnvelope(ValidationMessageEnvelope envelope) {
-        return (AssayData) envelope.getEntityToValidate();
     }
 
 }
