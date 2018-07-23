@@ -36,7 +36,7 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
 
     @Override
     List<SingleValidationResult> validateSubmittable(SampleValidationMessageEnvelope envelope) {
-        Sample sample = getSampleFromEnvelope(envelope);
+        Sample sample = envelope.getEntityToValidate();
 
         List<SingleValidationResult> results = referenceValidator.validate(
                 sample.getId(),
@@ -48,13 +48,8 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
     }
 
     @Override
-    List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope) {
-        Sample sample = getSampleFromEnvelope(envelope);
-
+    List<SingleValidationResult> validateAttributes(SampleValidationMessageEnvelope envelope) {
+        Sample sample = envelope.getEntityToValidate();
         return ValidatorHelper.validateAttribute(sample.getAttributes(), sample.getId(), attributeValidator);
-    }
-
-    private Sample getSampleFromEnvelope(ValidationMessageEnvelope envelope) {
-        return (Sample) envelope.getEntityToValidate();
     }
 }

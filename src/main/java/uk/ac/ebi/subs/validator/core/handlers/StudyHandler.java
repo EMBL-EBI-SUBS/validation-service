@@ -35,7 +35,7 @@ public class StudyHandler extends AbstractHandler<StudyValidationMessageEnvelope
 
     @Override
     public List<SingleValidationResult> validateSubmittable(StudyValidationMessageEnvelope envelope) {
-        Study study = getStudyFromEnvelope(envelope);
+        Study study = envelope.getEntityToValidate();
 
         List<SingleValidationResult> results = Arrays.asList(
                 referenceValidator.validate(study.getId(), study.getProjectRef(), envelope.getProject()),
@@ -46,14 +46,9 @@ public class StudyHandler extends AbstractHandler<StudyValidationMessageEnvelope
     }
 
     @Override
-    List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope) {
-        Study study = getStudyFromEnvelope(envelope);
-
+    List<SingleValidationResult> validateAttributes(StudyValidationMessageEnvelope envelope) {
+        Study study = envelope.getEntityToValidate();
         return ValidatorHelper.validateAttribute(study.getAttributes(), study.getId(), attributeValidator);
-    }
-
-    private Study getStudyFromEnvelope(ValidationMessageEnvelope envelope) {
-        return (Study) envelope.getEntityToValidate();
     }
 
 }
