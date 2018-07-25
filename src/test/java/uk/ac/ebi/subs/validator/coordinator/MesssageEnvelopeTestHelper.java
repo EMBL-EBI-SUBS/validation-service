@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
@@ -65,7 +66,7 @@ public class MesssageEnvelopeTestHelper {
         return sampleList;
     }
 
-    static List<Protocol> createProtocols (Team team, int protocolNumber) {
+    static List<Protocol> createProtocols (Submission submission, Team team, int protocolNumber) {
         List<Protocol> protocols = new ArrayList<>(protocolNumber);
         for (int i = 0; i < protocolNumber; i++ ) {
             Protocol protocol = new Protocol();
@@ -74,6 +75,7 @@ public class MesssageEnvelopeTestHelper {
             protocol.setTitle("Sample collection");
             protocol.setDescription("Test collection");
             protocol.setTeam(team);
+            protocol.setSubmission(submission);
             protocols.add(protocol);
         }
         return protocols;
@@ -96,5 +98,11 @@ public class MesssageEnvelopeTestHelper {
         study.setAccession(projectAccession);
         study.setSubmission(submission);
         return studyRepository.save(study);
+    }
+
+
+    public static List<Protocol> createAndSaveProtocols(ProtocolRepository protocolRepository, Submission submission, Team team) {
+        List<Protocol> protocols = MesssageEnvelopeTestHelper.createProtocols(submission,team, 3);
+        return protocolRepository.save(protocols);
     }
 }
