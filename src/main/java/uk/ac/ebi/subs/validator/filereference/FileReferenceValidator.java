@@ -36,8 +36,6 @@ public class FileReferenceValidator {
     static final String SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE = "All referenced files exists on the file storage.";
     static final String SUCCESS_FILE_VALIDATION_MESSAGE_UPLOADED_FILE = "All file uploaded file(s) referenced in file metadata";
 
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-
     public List<SingleValidationResult> validate(File fileToValidate) {
         List<SingleValidationResult> singleValidationResults = new ArrayList<>();
         List<String> filePathsFromMetadata = new ArrayList<>();
@@ -51,30 +49,6 @@ public class FileReferenceValidator {
 
         return singleValidationResults;
     }
-
-//    public List<SingleValidationResult> validate(AssayData entityToValidate, String submissionID) {
-//        List<SingleValidationResult> singleValidationResults = new ArrayList<>();
-//        List<uk.ac.ebi.subs.repository.model.fileupload.File> uploadedFiles = fileRepository.findBySubmissionId(submissionID);
-//        List<String> filePathsFromUploadedFile =
-//                uploadedFiles.stream().map(File::getFilename)
-//                .collect(Collectors.toList());
-//
-//        List<String> filePathsFromEntity = entityToValidate.getFiles().stream()
-//                .map(uk.ac.ebi.subs.data.component.File::getName)
-//                .collect(Collectors.toList());
-//
-//        if (!filePathsFromEntity.isEmpty()) {
-//            for (String filepath : filePathsFromEntity) {
-//                singleValidationResults.add(validateIfReferencedFileExistsOnStorage(entityToValidate.getId(), filepath,
-//                        filePathsFromUploadedFile));
-//            }
-//        } else {
-//            singleValidationResults.add(generateDefaultSingleValidationResult(
-//                    entityToValidate.getId(), SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE));
-//        }
-//
-//        return singleValidationResults;
-//    }
 
     public List<SingleValidationResult> validate(Files entityToValidate, String submissionID, String entityID) {
         List<SingleValidationResult> singleValidationResults = new ArrayList<>();
