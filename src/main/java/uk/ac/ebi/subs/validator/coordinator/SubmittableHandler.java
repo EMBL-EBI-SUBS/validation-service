@@ -37,6 +37,7 @@ import static uk.ac.ebi.subs.validator.messaging.CoordinatorRoutingKeys.EVENT_EN
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorRoutingKeys.EVENT_ENA_SAMPLE_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorRoutingKeys.EVENT_ENA_STUDY_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorRoutingKeys.EVENT_TAXON_SAMPLE_VALIDATION;
+import static uk.ac.ebi.subs.validator.messaging.FileReferenceRoutingKeys.EVENT_ANALYSIS_FILEREF_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.FileReferenceRoutingKeys.EVENT_ASSAYDATA_FILEREF_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_ANALYSIS_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.SchemaRoutingKeys.EVENT_SCHEMA_ASSAYDATA_VALIDATION;
@@ -206,7 +207,7 @@ public class SubmittableHandler {
         return false;
     }
 
-    protected boolean handleSubmittableForFileOperation(AssayData assayData, String submissionId) {
+    protected boolean handleAssayDataForFileOperation(AssayData assayData, String submissionId) {
         Optional<ValidationResult> optionalValidationResult = coordinatorValidationResultService.fetchValidationResultDocument(assayData);
         if (optionalValidationResult.isPresent()) {
             ValidationResult validationResult = optionalValidationResult.get();
@@ -219,6 +220,31 @@ public class SubmittableHandler {
             rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ASSAYDATA_FILEREF_VALIDATION, assayDataValidationMessageEnvelope);
 
             triggerAssayDataValidations(assayDataValidationMessageEnvelope);
+
+            return validationResult.getEntityUuid() != null;
+        }
+        return false;
+    }
+
+    /**
+     * @param analysis
+     * @param submissionId
+     * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Analysis} entity and
+     * the UUID of the {@link ValidationResult}
+     */
+    protected boolean handleAnalysisForFileOperation(Analysis analysis, String submissionId) {
+        Optional<ValidationResult> optionalValidationResult = coordinatorValidationResultService.fetchValidationResultDocument(analysis);
+        if (optionalValidationResult.isPresent()) {
+            ValidationResult validationResult = optionalValidationResult.get();
+            logger.debug("Validation result document has been persisted into MongoDB with ID: {}", validationResult.getUuid());
+
+            AnalysisValidationEnvelope analysisValidationEnvelope = new AnalysisValidationEnvelope(validationResult.getUuid(), validationResult.getVersion(), analysis, submissionId);
+            analysisValidationMessageEnvelopeExpander.expandEnvelope(analysisValidationEnvelope);
+
+            logger.debug("Sending assay data to file reference validation queue");
+            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_ANALYSIS_FILEREF_VALIDATION, analysisValidationEnvelope);
+
+            triggerAnalysisValidations(analysisValidationEnvelope);
 
             return validationResult.getEntityUuid() != null;
         }
