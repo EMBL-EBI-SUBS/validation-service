@@ -33,6 +33,8 @@ public class JsonSchemaValidationHandler {
     // Temporary solution - schema url should be provided not hardcoded
     @Value("${sample.schema.url}")
     private String sampleSchemaUrl;
+    @Value("${mlsample.schema.url}")
+    private String mlSampleSchemaUrl;
     @Value("${study.schema.url}")
     private String studySchemaUrl;
     @Value("${assay.schema.url}")
