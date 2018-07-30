@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.FileUploadValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
@@ -17,6 +18,7 @@ import uk.ac.ebi.subs.validator.messaging.FileReferenceQueues;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static uk.ac.ebi.subs.validator.messaging.FileReferenceQueues.FILE_REFERENCE_ANALYSIS_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.FileReferenceQueues.FILE_REFERENCE_ASSAYDATA_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVENT_VALIDATION_ERROR;
 import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVENT_VALIDATION_SUCCESS;
@@ -41,9 +43,23 @@ public class FileReferenceValidatorListener {
                 envelope.getValidationResultUUID());
 
         SingleValidationResultsEnvelope singleValidationResultsEnvelope =
-                fileReferenceHandler.handleValidationRequestForSubmittable(validationDTO, FileReferenceValidationType.ASSAY_DATA);
+                fileReferenceHandler.handleValidationRequestForAssayData(validationDTO);
         sendResults(singleValidationResultsEnvelope);
     }
+
+    @RabbitListener(queues = FILE_REFERENCE_ANALYSIS_VALIDATION)
+    public void handleAnalysisFileReferenceValidationRequest(AnalysisValidationEnvelope envelope) {
+        log.debug("Analysis file reference validation request received with ID: {}.",
+                envelope.getEntityToValidate().getId());
+        FileReferenceValidationDTO validationDTO = new FileReferenceValidationDTO(
+                envelope.getEntityToValidate(), envelope.getSubmissionId(), envelope.getValidationResultVersion(),
+                envelope.getValidationResultUUID());
+
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope =
+                fileReferenceHandler.handleValidationRequestForAnalysis(validationDTO);
+        sendResults(singleValidationResultsEnvelope);
+    }
+
 
     @RabbitListener(queues = FileReferenceQueues.FILE_REFERENCE_VALIDATION)
     public void handleFileReferenceValidationRequest(FileUploadValidationMessageEnvelope envelope) {
@@ -54,7 +70,7 @@ public class FileReferenceValidatorListener {
                 envelope.getValidationResultUUID());
 
         SingleValidationResultsEnvelope singleValidationResultsEnvelope =
-                fileReferenceHandler.handleValidationRequestForUploadedFile(validationDTO, FileReferenceValidationType.UPLOADED_FILE);
+                fileReferenceHandler.handleValidationRequestForUploadedFile(validationDTO);
         sendResults(singleValidationResultsEnvelope);
     }
 
