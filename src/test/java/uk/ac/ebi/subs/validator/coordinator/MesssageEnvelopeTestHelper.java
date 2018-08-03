@@ -153,10 +153,21 @@ public class MesssageEnvelopeTestHelper {
         sampleValidationMessageEnvelope.setValidationResultUUID(UUID.randomUUID().toString());
 
         List<Sample> samples = createSamples(submission, team, 3);
-        sampleValidationMessageEnvelope.setEntityToValidate(samples.get(0));
+        sampleValidationMessageEnvelope.setEntityToValidate(getSubmittableSample(samples.get(0)));
 
         sampleValidationMessageEnvelope.setSampleList(getSubmittableSamples(samples, submission.getId()));
         return sampleValidationMessageEnvelope;
+    }
+
+    static uk.ac.ebi.subs.data.submittable.Sample getSubmittableSample(Sample sample){
+        uk.ac.ebi.subs.data.submittable.Sample sample1 = new uk.ac.ebi.subs.data.submittable.Sample();
+        sample1.setTeam(sample.getTeam());
+        sample1.setAlias(sample.getAlias());
+        sample1.setAccession(sample.getAccession());
+        sample1.setAttributes(sample.getAttributes());
+        sample1.setTaxonId(sample.getTaxonId());
+        sample1.setReleaseDate(sample.getReleaseDate());
+        return sample1;
     }
 
     static List<uk.ac.ebi.subs.validator.model.Submittable<uk.ac.ebi.subs.data.submittable.Sample>> getSubmittableSamples(List<Sample> samples, String submissionID) {
