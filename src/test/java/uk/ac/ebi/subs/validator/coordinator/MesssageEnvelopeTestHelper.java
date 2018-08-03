@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.validator.coordinator;
 
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.repository.model.Protocol;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Study;
@@ -12,6 +13,7 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
+import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
@@ -187,6 +189,13 @@ public class MesssageEnvelopeTestHelper {
         studyValidationMessageEnvelope.setSubmissionId(submission.getId());
         studyValidationMessageEnvelope.setValidationResultUUID(UUID.randomUUID().toString());
 
+        studyValidationMessageEnvelope.setEntityToValidate(getStudy());
+
+        return studyValidationMessageEnvelope;
+
+    }
+
+    public static uk.ac.ebi.subs.data.submittable.Study getStudy(){
         uk.ac.ebi.subs.data.submittable.Study study = new uk.ac.ebi.subs.data.submittable.Study();
         study.setAlias(UUID.randomUUID().toString());
         study.setAccession(UUID.randomUUID().toString());
@@ -194,10 +203,28 @@ public class MesssageEnvelopeTestHelper {
         study.setTitle("Test study");
         study.setDescription("Mock study to test validation");
         study.setStudyType(StudyDataType.Metabolomics_LCMS);
+        return study;
+    }
 
-        studyValidationMessageEnvelope.setEntityToValidate(study);
+    public static AssayValidationMessageEnvelope getAssayValidationMessageEnvelope(){
+        AssayValidationMessageEnvelope assayValidationMessageEnvelope = new AssayValidationMessageEnvelope();
 
-        return studyValidationMessageEnvelope;
+        Team team = createTeam();
+        Submission submission = createNewSubmission(team);
+
+        assayValidationMessageEnvelope.setSubmissionId(submission.getId());
+        assayValidationMessageEnvelope.setValidationResultUUID(UUID.randomUUID().toString());
+        uk.ac.ebi.subs.data.submittable.Study study = getStudy();
+        assayValidationMessageEnvelope.setStudy(new Submittable<uk.ac.ebi.subs.data.submittable.Study>(study,submission.getId()));
+
+        Assay assay = new Assay();
+        assay.setAlias(UUID.randomUUID().toString());
+        assay.setAccession(UUID.randomUUID().toString());
+        assay.setAttributes(generateUsiAttributes());
+
+        assayValidationMessageEnvelope.setEntityToValidate(assay);
+
+        return  assayValidationMessageEnvelope;
 
     }
 }
