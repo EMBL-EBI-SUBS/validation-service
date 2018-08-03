@@ -50,7 +50,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile("uk.ac.ebi.subs:subs-processing-model:2.4.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.8.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.8.2-SNAPSHOT")
     testCompile("org.springframework.boot:spring-boot-starter-test")
 
     compileOnly("org.projectlombok:lombok:1.16.18")
