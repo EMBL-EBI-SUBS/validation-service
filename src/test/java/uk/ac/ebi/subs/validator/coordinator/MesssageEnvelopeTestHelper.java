@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.time.Instant;
@@ -176,5 +177,27 @@ public class MesssageEnvelopeTestHelper {
             submittableSamples.add(new Submittable<uk.ac.ebi.subs.data.submittable.Sample>(sample, submissionID));
         }
         return submittableSamples;
+    }
+
+    public static StudyValidationMessageEnvelope getStudyValidationMessageEnvelope(){
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = new StudyValidationMessageEnvelope();
+        Team team = createTeam();
+        Submission submission = createNewSubmission(team);
+
+        studyValidationMessageEnvelope.setSubmissionId(submission.getId());
+        studyValidationMessageEnvelope.setValidationResultUUID(UUID.randomUUID().toString());
+
+        uk.ac.ebi.subs.data.submittable.Study study = new uk.ac.ebi.subs.data.submittable.Study();
+        study.setAlias(UUID.randomUUID().toString());
+        study.setAccession(UUID.randomUUID().toString());
+        study.setAttributes(generateUsiAttributes());
+        study.setTitle("Test study");
+        study.setDescription("Mock study to test validation");
+        study.setStudyType(StudyDataType.Metabolomics_LCMS);
+
+        studyValidationMessageEnvelope.setEntityToValidate(study);
+
+        return studyValidationMessageEnvelope;
+
     }
 }
