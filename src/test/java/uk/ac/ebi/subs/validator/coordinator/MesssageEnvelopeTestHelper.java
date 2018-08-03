@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.validator.coordinator;
 
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
 import uk.ac.ebi.subs.data.component.ProtocolRef;
+import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Protocol;
@@ -97,6 +98,7 @@ public class MesssageEnvelopeTestHelper {
         study.setAlias(projectAlias);
         study.setAccession(projectAccession);
         study.setSubmission(submission);
+        study.setStudyType(StudyDataType.Metabolomics_LCMS);
         return studyRepository.save(study);
     }
 
