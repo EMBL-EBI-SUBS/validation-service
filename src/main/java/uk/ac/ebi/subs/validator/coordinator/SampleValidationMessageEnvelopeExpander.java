@@ -43,12 +43,9 @@ public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEn
             }
 
         }
-
-        StudyDataType studyDataType;
         List<Study> studies = studyRepository.findBySubmissionId(validationMessageEnvelope.getSubmissionId());
         if(studies !=null && !studies.isEmpty()){
-            studyDataType = studies.get(0).getStudyType();
-            //todo set studydatatype in sample validation envelope
+            validationMessageEnvelope.setStudyDataType(studies.get(0).getStudyType());
         }
 
     }
