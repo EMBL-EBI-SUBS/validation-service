@@ -90,7 +90,9 @@ public class JsonSchemaValidationHandler {
     }
 
     public SingleValidationResultsEnvelope handleAssayValidation(AssayValidationMessageEnvelope envelope) {
-        JsonNode assaySchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), assaySchemaUrl); // TODO - handle logic on which schema to use for validation
+        String typeName = envelope.getEntityToValidate().getClass().getTypeName();
+        String respectiveSchemaUrl = getRespectiveSchemaUrl(envelope.getStudy().getBaseSubmittable().getStudyType(),typeName);
+        JsonNode assaySchema = schemaService.getSchemaFor(typeName, respectiveSchemaUrl);
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assaySchema, mapper.valueToTree(envelope.getEntityToValidate()));
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
