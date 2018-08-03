@@ -10,6 +10,7 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.validator.coordinator.MesssageEnvelopeTestHelper;
+import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
@@ -29,10 +30,11 @@ public class JsonSchemaValidationHandlerTest {
 
     @Before
     public void setUp() {
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
+        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
             protected boolean hasError(HttpStatus statusCode) {
                 return false;
-            }});
+            }
+        });
 
         schemaService = new SchemaService(restTemplate);
 
@@ -44,7 +46,7 @@ public class JsonSchemaValidationHandlerTest {
         jsonSchemaValidationHandler.setSampleSchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/sample/sample-schema.json");
 
         jsonSchemaValidationHandler.setAssaySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/assay/assay-schema.json");
-        jsonSchemaValidationHandler.setMlSampleSchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/assay/ml-assay-schema.json");
+        jsonSchemaValidationHandler.setMlAssaySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/assay/ml-assay-schema.json");
 
         jsonSchemaValidationHandler.setStudySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/study/study-schema.json");
         jsonSchemaValidationHandler.setMlStudySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/study/ml-study-schema.json");
@@ -57,8 +59,8 @@ public class JsonSchemaValidationHandlerTest {
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSampleValidation(sampleValidationEnvelope);
 
         assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 2);
-        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(0).getMessage(),".attributes.Organism error(s): should have required property 'Organism'.");
-        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(1).getMessage(),".attributes.Organism part error(s): should have required property 'Organism part'.");
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(0).getMessage(), ".attributes.Organism error(s): should have required property 'Organism'.");
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(1).getMessage(), ".attributes.Organism part error(s): should have required property 'Organism part'.");
 
         sampleValidationEnvelope.setStudyDataType(StudyDataType.Sequencing);
         singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSampleValidation(sampleValidationEnvelope);
@@ -72,11 +74,26 @@ public class JsonSchemaValidationHandlerTest {
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleStudyValidation(studyValidationMessageEnvelope);
 
         assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 7);
-        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(1).getMessage(),".attributes.factors error(s): should have required property 'factors'.");
-        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(2).getMessage(),".attributes.studyDesignDescriptors error(s): should have required property 'studyDesignDescriptors'.");
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(1).getMessage(), ".attributes.factors error(s): should have required property 'factors'.");
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(2).getMessage(), ".attributes.studyDesignDescriptors error(s): should have required property 'studyDesignDescriptors'.");
 
         studyValidationMessageEnvelope.getEntityToValidate().setStudyType(StudyDataType.Proteomics);
         singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleStudyValidation(studyValidationMessageEnvelope);
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 4);
+
+    }
+
+
+    @Test
+    public void handleAssayValidation() {
+        AssayValidationMessageEnvelope assayValidationMessageEnvelope = MesssageEnvelopeTestHelper.getAssayValidationMessageEnvelope();
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleAssayValidation(assayValidationMessageEnvelope);
+
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 7);
+        assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().get(0).getMessage(), ".attributes.technologyType error(s): should have required property 'technologyType'.");
+
+        assayValidationMessageEnvelope.getStudy().getBaseSubmittable().setStudyType(StudyDataType.Proteomics);
+        singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleAssayValidation(assayValidationMessageEnvelope);
         assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 4);
 
     }
