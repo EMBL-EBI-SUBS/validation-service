@@ -40,8 +40,12 @@ public class JsonSchemaValidationHandler {
     private String mlSampleSchemaUrl;
     @Value("${study.schema.url}")
     private String studySchemaUrl;
+    @Value("${mlstudy.schema.url}")
+    private String mlStudySchemaUrl;
     @Value("${assay.schema.url}")
     private String assaySchemaUrl;
+    @Value("${mlassay.schema.url}")
+    private String mlAssaySchemaUrl;
     @Value("${assaydata.schema.url}")
     private String assayDataSchemaUrl;
     @Value("${eva.seqvar.analysis.schema.url}")
@@ -61,8 +65,9 @@ public class JsonSchemaValidationHandler {
     }
 
     public SingleValidationResultsEnvelope handleSampleValidation(SampleValidationMessageEnvelope envelope) {
-        String respectiveSampleSchemaUrl = getRespectiveSampleSchemaUrl(envelope.getStudyDataType());
-        JsonNode sampleSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), respectiveSampleSchemaUrl); 
+        String typeName = envelope.getEntityToValidate().getClass().getTypeName();
+        String respectiveSampleSchemaUrl = getRespectiveSchemaUrl(envelope.getStudyDataType(),typeName);
+        JsonNode sampleSchema = schemaService.getSchemaFor(typeName, respectiveSampleSchemaUrl);
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(sampleSchema, mapper.valueToTree(envelope.getEntityToValidate()));
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
@@ -139,16 +144,20 @@ public class JsonSchemaValidationHandler {
         return validationResult;
     }
 
-    private String getRespectiveSampleSchemaUrl(StudyDataType studyDataType) {
+    private String getRespectiveSchemaUrl(StudyDataType studyDataType, String submittableType) {
         switch (studyDataType) {
             case Metabolomics_GCMS:
             case Metabolomics_LCMS:
             case Metabolomics_ImagingMS:
             case Metabolomics_NMR:
             case Metabolomics_ImagingNMR:
-                return mlSampleSchemaUrl;
+                return submittableType == "uk.ac.ebi.subs.data.submittable.Sample" ? mlSampleSchemaUrl :
+                        submittableType ==  "uk.ac.ebi.subs.data.submittable.Assay" ? mlAssaySchemaUrl :
+                        mlStudySchemaUrl;
         }
-        return sampleSchemaUrl;
+        return submittableType == "uk.ac.ebi.subs.data.submittable.Sample" ? sampleSchemaUrl :
+                submittableType ==  "uk.ac.ebi.subs.data.submittable.Assay" ? assaySchemaUrl :
+                        studySchemaUrl;
     }
 
 }
