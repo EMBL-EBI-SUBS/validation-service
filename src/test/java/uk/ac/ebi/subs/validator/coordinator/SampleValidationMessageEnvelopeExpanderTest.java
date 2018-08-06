@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, StudyRepository.class})
+@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
 @Category(MongoDBDependentTest.class)
 @EnableAutoConfiguration
 @SpringBootTest(classes = SampleValidationMessageEnvelopeExpander.class)
@@ -48,21 +48,16 @@ public class SampleValidationMessageEnvelopeExpanderTest {
     SubmissionRepository submissionRepository;
 
     @Autowired
-    StudyRepository studyRepository;
-
-    @Autowired
     SampleValidationMessageEnvelopeExpander sampleValidatorMessageEnvelopeExpander;
 
     Team team;
     Submission submission;
     List<Sample> savedSampleList;
-    Study study;
 
     @Before
     public void setup() {
         team = MesssageEnvelopeTestHelper.createTeam();
         submission = MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
-        study = MesssageEnvelopeTestHelper.createAndSaveStudy(studyRepository,submission,team);
         savedSampleList = MesssageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1);
     }
 
@@ -71,7 +66,6 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         sampleRepository.delete(savedSampleList);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
-        studyRepository.delete(submission.getId());
     }
 
 
@@ -131,14 +125,6 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         sampleValidatorMessageEnvelopeExpander.expandEnvelope(sampleValidationMessageEnvelope);
         final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = sampleValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
         assertThat(sampleList, is(empty()));
-    }
-
-    @Test
-    public void testExpandEnvelopeSameSubmissionWithStudyDataType() throws Exception {
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope();
-        sampleValidationMessageEnvelope.setSubmissionId(submission.getId());
-        sampleValidatorMessageEnvelopeExpander.expandEnvelope(sampleValidationMessageEnvelope);
-        assertEquals(sampleValidationMessageEnvelope.getStudyDataType(),StudyDataType.Metabolomics_LCMS);
     }
 
 
