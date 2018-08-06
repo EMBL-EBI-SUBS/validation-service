@@ -3,9 +3,12 @@ package uk.ac.ebi.subs.validator.filereference;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.component.Files;
 import uk.ac.ebi.subs.data.fileupload.File;
+import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.AnalysisRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
@@ -25,22 +28,20 @@ public class FileReferenceValidator {
     @NonNull
     private AssayDataRepository assayDataRepository;
 
-    final static String STORED_FILE_NOT_REFERENCED = "The [%s] uploaded file is not referenced in any of the run.";
-    final static String FILE_METADATA_NOT_EXISTS_AS_UPLOADED_FILE = "The file [%s] referenced in the metadata is not exists on the file storage area.";
-    static final String SUCCESS_FILE_VALIDATION_MESSAGE_ASSAY_DATA = "All referenced files exists on the file storage.";
-    static final String SUCCESS_FILE_VALIDATION_MESSAGE_UPLOADED_FILE = "All file uploaded file(s) referenced in file metadata";
+    @NonNull
+    private AnalysisRepository analysisRepository;
 
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    final static String STORED_FILE_NOT_REFERENCED = "The [%s] uploaded file is not referenced in any of the submittable.";
+    final static String FILE_METADATA_NOT_EXISTS_AS_UPLOADED_FILE = "The file [%s] referenced in the metadata is not exists on the file storage area.";
+    static final String SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE = "All referenced files exists on the file storage.";
+    static final String SUCCESS_FILE_VALIDATION_MESSAGE_UPLOADED_FILE = "All file uploaded file(s) referenced in file metadata";
 
     public List<SingleValidationResult> validate(File fileToValidate) {
         List<SingleValidationResult> singleValidationResults = new ArrayList<>();
-        final List<uk.ac.ebi.subs.repository.model.AssayData> assayDataList =
-                assayDataRepository.findBySubmissionId(fileToValidate.getSubmissionId());
+        List<String> filePathsFromMetadata = new ArrayList<>();
 
-        List<String> filePathsFromMetadata = assayDataList
-                .stream().map( AssayData::getFiles).collect(Collectors.toList())
-                .stream().flatMap(List::stream).map(uk.ac.ebi.subs.data.component.File::getName)
-                .collect(Collectors.toList());
+        filePathsFromMetadata.addAll(getFilesFromAssayData(fileToValidate.getSubmissionId()));
+        filePathsFromMetadata.addAll(getFilesFromAnalysis(fileToValidate.getSubmissionId()));
 
         singleValidationResults.add(
                 validateIfStoredFilesReferencedInSubmittables(fileToValidate, filePathsFromMetadata)
@@ -49,12 +50,12 @@ public class FileReferenceValidator {
         return singleValidationResults;
     }
 
-    public List<SingleValidationResult> validate(AssayData entityToValidate, String submissionID) {
+    public List<SingleValidationResult> validate(Files entityToValidate, String submissionID, String entityID) {
         List<SingleValidationResult> singleValidationResults = new ArrayList<>();
         List<uk.ac.ebi.subs.repository.model.fileupload.File> uploadedFiles = fileRepository.findBySubmissionId(submissionID);
         List<String> filePathsFromUploadedFile =
                 uploadedFiles.stream().map(File::getFilename)
-                .collect(Collectors.toList());
+                        .collect(Collectors.toList());
 
         List<String> filePathsFromEntity = entityToValidate.getFiles().stream()
                 .map(uk.ac.ebi.subs.data.component.File::getName)
@@ -62,15 +63,48 @@ public class FileReferenceValidator {
 
         if (!filePathsFromEntity.isEmpty()) {
             for (String filepath : filePathsFromEntity) {
-                singleValidationResults.add(validateIfReferencedFileExistsOnStorage(entityToValidate.getId(), filepath,
+                singleValidationResults.add(validateIfReferencedFileExistsOnStorage(entityID, filepath,
                         filePathsFromUploadedFile));
             }
         } else {
             singleValidationResults.add(generateDefaultSingleValidationResult(
-                    entityToValidate.getId(), SUCCESS_FILE_VALIDATION_MESSAGE_ASSAY_DATA));
+                    entityID, SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE));
         }
 
         return singleValidationResults;
+    }
+
+
+    private List<String> getFilesFromAssayData(String submissionID) {
+        List<String> filePathsFromMetadata = new ArrayList<>();
+        final List<uk.ac.ebi.subs.repository.model.AssayData> assayDataList =
+                assayDataRepository.findBySubmissionId(submissionID);
+
+        if (assayDataList.size() > 0) {
+
+            filePathsFromMetadata.addAll(assayDataList
+                    .stream().map(AssayData::getFiles).collect(Collectors.toList())
+                    .stream().flatMap(List::stream).map(uk.ac.ebi.subs.data.component.File::getName)
+                    .collect(Collectors.toList()));
+        }
+
+        return filePathsFromMetadata;
+    }
+
+    private List<String> getFilesFromAnalysis(String submissionID) {
+        List<String> filePathsFromMetadata = new ArrayList<>();
+        final List<uk.ac.ebi.subs.repository.model.Analysis> analysisList =
+                analysisRepository.findBySubmissionId(submissionID);
+
+        if (analysisList.size() > 0) {
+
+            filePathsFromMetadata.addAll(analysisList
+                    .stream().map(Analysis::getFiles).collect(Collectors.toList())
+                    .stream().flatMap(List::stream).map(uk.ac.ebi.subs.data.component.File::getName)
+                    .collect(Collectors.toList()));
+        }
+
+        return filePathsFromMetadata;
     }
 
     private SingleValidationResult validateIfStoredFilesReferencedInSubmittables(
@@ -89,7 +123,7 @@ public class FileReferenceValidator {
     private SingleValidationResult validateIfReferencedFileExistsOnStorage(String entityToValidateId, String metadataFilePath,
                                                                            List<String> storedFilesPathList) {
         SingleValidationResult singleValidationResult = generateDefaultSingleValidationResult(
-                entityToValidateId, SUCCESS_FILE_VALIDATION_MESSAGE_ASSAY_DATA);
+                entityToValidateId, SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE);
 
         if (!storedFilesPathList.contains(metadataFilePath)) {
             singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);

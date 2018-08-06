@@ -60,7 +60,7 @@ public class AssayDataFileReferenceHandlerTest {
         //entity to be validated
         assayData = new AssayData();
         assayData.setId(assayDataId);
-        assayData.setAssayRefs(Arrays.asList(assayRef));
+        assayData.setAssayRefs(Collections.singletonList(assayRef));
 
         //reference data for the envelope
         Assay assay = new Assay();
@@ -73,7 +73,7 @@ public class AssayDataFileReferenceHandlerTest {
         envelope.setValidationResultUUID(validationResultId);
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(assayData);
-        envelope.setAssays(Arrays.asList(wrappedAssay));
+        envelope.setAssays(Collections.singletonList(wrappedAssay));
         envelope.setSubmissionId(submissionId);
     }
 
@@ -108,7 +108,7 @@ public class AssayDataFileReferenceHandlerTest {
 
     private void mockRefValidatorCalls(SingleValidationResult assayDataResult) {
         when(
-                fileReferenceValidator.validate(assayData, submissionId)
+                fileReferenceValidator.validate(assayData, submissionId, assayData.getId())
         ).thenReturn(
                 Collections.singletonList(assayDataResult)
         );

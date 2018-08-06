@@ -10,6 +10,7 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.AnalysisRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
@@ -35,6 +36,9 @@ public class FileReferenceValidatorTest {
 
     @MockBean
     private AssayDataRepository assayDataRepository;
+
+    @MockBean
+    private AnalysisRepository analysisRepository;
 
     @MockBean
     private SubmissionRepository submissionRepository;
@@ -77,7 +81,7 @@ public class FileReferenceValidatorTest {
         assayDataList = Arrays.asList( assayDataWithoutFile1, assayDataWithoutFile2 );
         assayDataListWithFiles = Arrays.asList( assayDataWithFile1, assayDataWithFile2 );
 
-        fileReferenceValidator = new FileReferenceValidator(fileRepository, assayDataRepository);
+        fileReferenceValidator = new FileReferenceValidator(fileRepository, assayDataRepository, analysisRepository);
     }
 
     @Test
@@ -102,7 +106,7 @@ public class FileReferenceValidatorTest {
     @Test
     public void whenThereAreUploadedFileButAssayDataHasNotGotAnyFileReferences_ThenAssayDataValidationShouldPass() {
         SingleValidationResult singleValidationResultAssayData1 = createSingleValidationResult(
-                ASSAYDATA_IDS[0], SingleValidationResultStatus.Pass, FileReferenceValidator.SUCCESS_FILE_VALIDATION_MESSAGE_ASSAY_DATA
+                ASSAYDATA_IDS[0], SingleValidationResultStatus.Pass, FileReferenceValidator.SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE
         );
 
         given(this.fileRepository.findBySubmissionId(SUBMISSION_ID))
@@ -111,7 +115,7 @@ public class FileReferenceValidatorTest {
         given(this.assayDataRepository.findBySubmissionId(SUBMISSION_ID))
                 .willReturn(assayDataList);
 
-        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithoutFile1, SUBMISSION_ID);
+        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithoutFile1, SUBMISSION_ID, assayDataWithoutFile1.getId());
 
         assertThat(validationResults.size(), is(equalTo(1)));
 
@@ -131,7 +135,7 @@ public class FileReferenceValidatorTest {
         given(this.assayDataRepository.findBySubmissionId(SUBMISSION_ID))
                 .willReturn(assayDataListWithFiles);
 
-        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithFile1, SUBMISSION_ID);
+        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithFile1, SUBMISSION_ID, assayDataWithFile1.getId());
 
         assertThat(validationResults.size(), is(equalTo(1)));
 
@@ -160,7 +164,7 @@ public class FileReferenceValidatorTest {
     @Test
     public void whenAllStorageFilesReferenced_And_AllFileMetadataReferenceAFileInStorage_ThenAssayDataValidationShouldSucceed() {
         SingleValidationResult singleValidationResultAssayData2 = createSingleValidationResult(
-                ASSAYDATA_IDS[1], SingleValidationResultStatus.Pass, FileReferenceValidator.SUCCESS_FILE_VALIDATION_MESSAGE_ASSAY_DATA
+                ASSAYDATA_IDS[1], SingleValidationResultStatus.Pass, FileReferenceValidator.SUCCESS_FILE_VALIDATION_MESSAGE_SUBMITTABLE
         );
 
         given(this.fileRepository.findBySubmissionId(SUBMISSION_ID))
@@ -169,7 +173,7 @@ public class FileReferenceValidatorTest {
         given(this.assayDataRepository.findBySubmissionId(SUBMISSION_ID))
                 .willReturn(assayDataListWithFiles);
 
-        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithFile2, SUBMISSION_ID);
+        List<SingleValidationResult> validationResults = fileReferenceValidator.validate(assayDataWithFile2, SUBMISSION_ID, assayDataWithFile2.getId());
 
         assertThat(validationResults.size(), is(equalTo(1)));
 
