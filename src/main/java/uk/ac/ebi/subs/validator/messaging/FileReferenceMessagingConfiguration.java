@@ -10,8 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.subs.messaging.ExchangeConfig;
 
 import static uk.ac.ebi.subs.messaging.Queues.buildQueueWithDlx;
-import static uk.ac.ebi.subs.validator.core.messaging.RoutingKeys.EVENT_CORE_ASSAYDATA_VALIDATION;
+import static uk.ac.ebi.subs.validator.messaging.FileReferenceQueues.FILE_REFERENCE_ANALYSIS_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.FileReferenceQueues.FILE_REFERENCE_ASSAYDATA_VALIDATION;
+import static uk.ac.ebi.subs.validator.messaging.FileReferenceRoutingKeys.EVENT_ANALYSIS_FILEREF_VALIDATION;
 import static uk.ac.ebi.subs.validator.messaging.FileReferenceRoutingKeys.EVENT_ASSAYDATA_FILEREF_VALIDATION;
 
 
@@ -27,6 +28,16 @@ public class FileReferenceMessagingConfiguration {
     @Bean
     public Binding fileReferenceAssayDataValidationBinding(Queue fileReferenceAssayDataValidationQueue, TopicExchange submissionExchange) {
         return BindingBuilder.bind(fileReferenceAssayDataValidationQueue).to(submissionExchange).with(EVENT_ASSAYDATA_FILEREF_VALIDATION);
+    }
+
+    @Bean
+    public Queue fileReferenceAnalysisValidationQueue() {
+        return buildQueueWithDlx(FILE_REFERENCE_ANALYSIS_VALIDATION);
+    }
+
+    @Bean
+    public Binding fileReferenceAnalysisValidationBinding(Queue fileReferenceAnalysisValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(fileReferenceAnalysisValidationQueue).to(submissionExchange).with(EVENT_ANALYSIS_FILEREF_VALIDATION);
     }
 
     @Bean

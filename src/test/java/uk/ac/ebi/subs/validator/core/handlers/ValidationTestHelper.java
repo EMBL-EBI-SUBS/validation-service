@@ -10,7 +10,6 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.filereference.FileReferenceHandler;
 import uk.ac.ebi.subs.validator.filereference.FileReferenceValidationDTO;
-import uk.ac.ebi.subs.validator.filereference.FileReferenceValidationType;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public final class ValidationTestHelper {
             AbstractHandler handler, ValidationMessageEnvelope envelope) {
 
         return handler.handleValidationRequest(envelope);
-    };
+    }
 
     public static SingleValidationResultsEnvelope getValidationResultForAssayDataFileReference(
             FileReferenceHandler handler, AssayDataValidationMessageEnvelope envelope) {
@@ -38,7 +37,7 @@ public final class ValidationTestHelper {
                 envelope.getValidationResultUUID());
 
 
-        return handler.handleValidationRequestForSubmittable(validationDTO, FileReferenceValidationType.ASSAY_DATA);
+        return handler.handleValidationRequestForAssayData(validationDTO);
     }
 
     public static SingleValidationResultsEnvelope getValidationResultForUploadedFileFileReference(
@@ -49,8 +48,8 @@ public final class ValidationTestHelper {
                 envelope.getValidationResultUUID());
 
 
-        return handler.handleValidationRequestForUploadedFile(validationDTO, FileReferenceValidationType.UPLOADED_FILE);
-    };
+        return handler.handleValidationRequestForUploadedFile(validationDTO);
+    }
 
 
     public static List<SingleValidationResult> commonTestMethodForEntities(SingleValidationResultsEnvelope resultsEnvelope,

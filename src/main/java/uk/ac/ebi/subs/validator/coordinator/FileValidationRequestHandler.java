@@ -8,8 +8,10 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.fileupload.File;
 import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.repository.model.Analysis;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.AnalysisRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
 import uk.ac.ebi.subs.validator.data.FileUploadValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -31,6 +33,8 @@ public class FileValidationRequestHandler {
     private SubmittableHandler submittableHandler;
     @NonNull
     private AssayDataRepository assayDataRepository;
+    @NonNull
+    private AnalysisRepository analysisRepository;
     @NonNull
     private FileRepository fileRepository;
 
@@ -67,7 +71,16 @@ public class FileValidationRequestHandler {
             // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
             // if yes, then make sure that the list of file references has not been changed
 
-            submittableHandler.handleSubmittableForFileOperation(assayData, submissionId);
+            submittableHandler.handleAssayDataForFileOperation(assayData, submissionId);
+        });
+
+        List<Analysis> analysisList = analysisRepository.findBySubmissionId(submissionId);
+        analysisList.forEach( analysis -> {
+
+            // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
+            // if yes, then make sure that the list of file references has not been changed
+
+            submittableHandler.handleAnalysisForFileOperation(analysis, submissionId);
         });
 
         return false;
