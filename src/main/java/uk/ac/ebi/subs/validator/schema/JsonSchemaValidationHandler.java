@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.StudyDataType;
+import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
@@ -65,9 +66,7 @@ public class JsonSchemaValidationHandler {
     }
 
     public SingleValidationResultsEnvelope handleSampleValidation(SampleValidationMessageEnvelope envelope) {
-        String typeName = envelope.getEntityToValidate().getClass().getTypeName();
-        String respectiveSampleSchemaUrl = getRespectiveSchemaUrl(envelope.getStudyDataType(),typeName);
-        JsonNode sampleSchema = schemaService.getSchemaFor(typeName, respectiveSampleSchemaUrl);
+        JsonNode sampleSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), sampleSchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(sampleSchema, mapper.valueToTree(envelope.getEntityToValidate()));
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
@@ -156,12 +155,10 @@ public class JsonSchemaValidationHandler {
             case Metabolomics_ImagingMS:
             case Metabolomics_NMR:
             case Metabolomics_ImagingNMR:
-                return submittableType == "uk.ac.ebi.subs.data.submittable.Sample" ? mlSampleSchemaUrl :
-                        submittableType ==  "uk.ac.ebi.subs.data.submittable.Assay" ? mlAssaySchemaUrl :
+                return submittableType == Assay.class.getTypeName() ? mlAssaySchemaUrl :
                         mlStudySchemaUrl;
         }
-        return submittableType == "uk.ac.ebi.subs.data.submittable.Sample" ? sampleSchemaUrl :
-                submittableType ==  "uk.ac.ebi.subs.data.submittable.Assay" ? assaySchemaUrl :
+        return submittableType ==  Assay.class.getTypeName() ? assaySchemaUrl :
                         studySchemaUrl;
     }
 
