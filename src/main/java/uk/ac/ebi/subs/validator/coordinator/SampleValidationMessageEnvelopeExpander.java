@@ -2,8 +2,11 @@ package uk.ac.ebi.subs.validator.coordinator;
 
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
+import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
@@ -12,9 +15,12 @@ import java.util.List;
 @Service
 public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEnvelopeExpander<SampleValidationMessageEnvelope> {
     SampleRepository sampleRepository;
+    StudyRepository studyRepository;
 
-    public SampleValidationMessageEnvelopeExpander(SampleRepository sampleRepository) {
+    public SampleValidationMessageEnvelopeExpander(SampleRepository sampleRepository,
+                                                   StudyRepository studyRepository) {
         this.sampleRepository = sampleRepository;
+        this.studyRepository = studyRepository;
     }
 
     @Override
@@ -36,6 +42,10 @@ public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEn
                 validationMessageEnvelope.getSampleList().add(sampleSubmittable);
             }
 
+        }
+        List<Study> studies = studyRepository.findBySubmissionId(validationMessageEnvelope.getSubmissionId());
+        if(studies !=null && !studies.isEmpty()){
+            validationMessageEnvelope.setStudyDataType(studies.get(0).getStudyType());
         }
 
     }

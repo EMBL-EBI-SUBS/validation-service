@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
@@ -28,11 +30,14 @@ import static uk.ac.ebi.subs.validator.util.ValidationHelper.generatePassingSing
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValidationResultsEnvelope;
 
 @Service
+@Data
 public class JsonSchemaValidationHandler {
 
     // Temporary solution - schema url should be provided not hardcoded
     @Value("${sample.schema.url}")
     private String sampleSchemaUrl;
+    @Value("${mlsample.schema.url}")
+    private String mlSampleSchemaUrl;
     @Value("${study.schema.url}")
     private String studySchemaUrl;
     @Value("${assay.schema.url}")
@@ -56,7 +61,8 @@ public class JsonSchemaValidationHandler {
     }
 
     public SingleValidationResultsEnvelope handleSampleValidation(SampleValidationMessageEnvelope envelope) {
-        JsonNode sampleSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), sampleSchemaUrl); // TODO - handle logic on which schema to use for validation
+        String respectiveSampleSchemaUrl = getRespectiveSampleSchemaUrl(envelope.getStudyDataType());
+        JsonNode sampleSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), respectiveSampleSchemaUrl); 
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(sampleSchema, mapper.valueToTree(envelope.getEntityToValidate()));
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
@@ -65,7 +71,7 @@ public class JsonSchemaValidationHandler {
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
 
-    public SingleValidationResultsEnvelope handleStudyValidation(StudyValidationMessageEnvelope envelope)  {
+    public SingleValidationResultsEnvelope handleStudyValidation(StudyValidationMessageEnvelope envelope) {
         JsonNode studySchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), studySchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(studySchema, mapper.valueToTree(envelope.getEntityToValidate()));
@@ -75,7 +81,7 @@ public class JsonSchemaValidationHandler {
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
 
-    public SingleValidationResultsEnvelope handleAssayValidation(AssayValidationMessageEnvelope envelope)  {
+    public SingleValidationResultsEnvelope handleAssayValidation(AssayValidationMessageEnvelope envelope) {
         JsonNode assaySchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), assaySchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assaySchema, mapper.valueToTree(envelope.getEntityToValidate()));
@@ -85,7 +91,7 @@ public class JsonSchemaValidationHandler {
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
 
-    public SingleValidationResultsEnvelope handleAssayDataValidation(AssayDataValidationMessageEnvelope envelope)  {
+    public SingleValidationResultsEnvelope handleAssayDataValidation(AssayDataValidationMessageEnvelope envelope) {
         JsonNode assayDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), assayDataSchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assayDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
@@ -95,7 +101,7 @@ public class JsonSchemaValidationHandler {
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
 
-    public SingleValidationResultsEnvelope handleAnalysisValidation(AnalysisValidationEnvelope envelope)  {
+    public SingleValidationResultsEnvelope handleAnalysisValidation(AnalysisValidationEnvelope envelope) {
         JsonNode analysisDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), evaSeqVarAnalysisSchemaUrl); // TODO - handle logic on which schema to use for validation
 
         List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(analysisDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
@@ -108,7 +114,7 @@ public class JsonSchemaValidationHandler {
     // -- Helper methods -- //
     private List<SingleValidationResult> getSingleValidationResults(ValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
         List<SingleValidationResult> singleValidationResultList;
-        if(jsonSchemaValidationErrors.isEmpty()) {
+        if (jsonSchemaValidationErrors.isEmpty()) {
             singleValidationResultList = Arrays.asList(generatePassingSingleValidationResult(envelope.getEntityToValidate().getId(), ValidationAuthor.JsonSchema));
         } else {
             singleValidationResultList = convertToSingleValidationResultList(jsonSchemaValidationErrors, envelope.getEntityToValidate().getId());
@@ -131,6 +137,18 @@ public class JsonSchemaValidationHandler {
         validationResult.setEntityUuid(entityUuid);
         validationResult.setMessage(error.getDataPath() + " error(s): " + error.getErrorsAsString());
         return validationResult;
+    }
+
+    private String getRespectiveSampleSchemaUrl(StudyDataType studyDataType) {
+        switch (studyDataType) {
+            case Metabolomics_GCMS:
+            case Metabolomics_LCMS:
+            case Metabolomics_ImagingMS:
+            case Metabolomics_NMR:
+            case Metabolomics_ImagingNMR:
+                return mlSampleSchemaUrl;
+        }
+        return sampleSchemaUrl;
     }
 
 }

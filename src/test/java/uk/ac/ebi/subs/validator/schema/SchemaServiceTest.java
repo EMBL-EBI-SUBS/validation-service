@@ -21,6 +21,7 @@ public class SchemaServiceTest {
 
     private String studySchemaUrl = schemaRootUrl + "/study/study-schema.json";
     private String sampleSchemaUrl = schemaRootUrl + "/sample/sample-schema.json";
+    private String mlSampleSchemaUrl = schemaRootUrl + "/sample/ml-sample-schema.json";
     private String assaySchemaUrl = schemaRootUrl + "/assay/assay-schema.json";
     private String assayDataSchemaUrl = schemaRootUrl + "/assaydata/assaydata-schema.json";
     private String evaSeqVarSchemaUrl = schemaRootUrl + "/analysis/eva-sequence-variation-schema.json";
@@ -30,7 +31,7 @@ public class SchemaServiceTest {
 
     @Before
     public void setUp() {
-        restTemplate.setMessageConverters(Arrays.asList(new JsonAsTextPlainHttpMessageConverter()));
+     //   restTemplate.setMessageConverters(Arrays.asList(new JsonAsTextPlainHttpMessageConverter()));
         schemaService = new SchemaService(restTemplate);
     }
 
@@ -38,6 +39,12 @@ public class SchemaServiceTest {
     public void getSchemaForSample() {
         JsonNode sampleSchema = schemaService.getSchemaFor(Sample.class.getTypeName(), sampleSchemaUrl);
         assertThat(sampleSchema.get("title").asText(), is("Submissions Sample Schema"));
+    }
+
+    @Test
+    public void getSchemaForMLSample() {
+        JsonNode sampleSchema = schemaService.getSchemaFor(Sample.class.getTypeName(), mlSampleSchemaUrl);
+        assertThat(sampleSchema.get("description").asText(), is("Schema based on rules found in http://isa-specs.readthedocs.io/en/latest/isajson.html#sample-schema-json"));
     }
 
     @Test
