@@ -40,9 +40,7 @@ public class JsonSchemaValidationHandlerTest {
         jsonSchemaValidationService.setJsonSchemaValidator("https://subs-json-schema-validator.herokuapp.com/validate");
 
         jsonSchemaValidationHandler = new JsonSchemaValidationHandler(jsonSchemaValidationService, schemaService);
-        jsonSchemaValidationHandler.setMlSampleSchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/sample/ml-sample-schema.json");
-        jsonSchemaValidationHandler.setSampleSchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/sample/sample-schema.json");
-
+        
         jsonSchemaValidationHandler.setAssaySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/assay/assay-schema.json");
         jsonSchemaValidationHandler.setMlAssaySchemaUrl("https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master/assay/ml-assay-schema.json");
 
