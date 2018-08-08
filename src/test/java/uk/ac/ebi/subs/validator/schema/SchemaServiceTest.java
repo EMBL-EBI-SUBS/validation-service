@@ -20,8 +20,11 @@ public class SchemaServiceTest {
     private String schemaRootUrl = "https://raw.githubusercontent.com/EMBL-EBI-SUBS/validation-schemas/master";
 
     private String studySchemaUrl = schemaRootUrl + "/study/study-schema.json";
+    private String mlStudySchemaUrl = schemaRootUrl + "/study/ml-study-schema.json";
     private String sampleSchemaUrl = schemaRootUrl + "/sample/sample-schema.json";
+    private String mlSampleSchemaUrl = schemaRootUrl + "/sample/ml-sample-schema.json";
     private String assaySchemaUrl = schemaRootUrl + "/assay/assay-schema.json";
+    private String mlAssaySchemaUrl = schemaRootUrl + "/assay/ml-assay-schema.json";
     private String assayDataSchemaUrl = schemaRootUrl + "/assaydata/assaydata-schema.json";
     private String evaSeqVarSchemaUrl = schemaRootUrl + "/analysis/eva-sequence-variation-schema.json";
 
@@ -30,7 +33,6 @@ public class SchemaServiceTest {
 
     @Before
     public void setUp() {
-        restTemplate.setMessageConverters(Arrays.asList(new JsonAsTextPlainHttpMessageConverter()));
         schemaService = new SchemaService(restTemplate);
     }
 
@@ -41,15 +43,33 @@ public class SchemaServiceTest {
     }
 
     @Test
+    public void getSchemaForMLSample() {
+        JsonNode sampleSchema = schemaService.getSchemaFor(Sample.class.getTypeName(), mlSampleSchemaUrl);
+        assertThat(sampleSchema.get("description").asText(), is("Schema based on rules found in http://isa-specs.readthedocs.io/en/latest/isajson.html#sample-schema-json"));
+    }
+
+    @Test
     public void getSchemaForStudy() {
         JsonNode studySchema = schemaService.getSchemaFor(Study.class.getTypeName(), studySchemaUrl);
         assertThat(studySchema.get("title").asText(), is("Submissions Study Schema"));
     }
 
     @Test
+    public void getSchemaForMLStudy() {
+        JsonNode studySchema = schemaService.getSchemaFor(Study.class.getTypeName(), mlStudySchemaUrl);
+        assertThat(studySchema.get("author").asText(), is("metabolights"));
+    }
+
+    @Test
     public void getSchemaForAssay() {
         JsonNode assaySchema = schemaService.getSchemaFor(Assay.class.getTypeName(), assaySchemaUrl);
         assertThat(assaySchema.get("title").asText(), is("Submissions Assay Schema"));
+    }
+
+    @Test
+    public void getSchemaForMLAssay() {
+        JsonNode assaySchema = schemaService.getSchemaFor(Assay.class.getTypeName(), mlAssaySchemaUrl);
+        assertThat(assaySchema.get("description").asText(), is("Schema based on rules found in http://isa-specs.readthedocs.io/en/latest/isajson.html#assay-schema-json"));
     }
 
     @Test
