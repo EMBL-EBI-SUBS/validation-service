@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
@@ -18,6 +19,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.util.BlankValidationResultMaps;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,6 +32,20 @@ public class CoordinatorValidationResultService {
 
     public CoordinatorValidationResultService(ValidationResultRepository repository) {
         this.repository = repository;
+    }
+
+    public ValidationResult fetchValidationResultDocument(Submittable submittable, Collection<ValidationAuthor> authorsRequired){
+        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(submittable);
+
+        if (optionalValidationResult.isPresent()) {
+            ValidationResult validationResult = optionalValidationResult.get();
+            logger.trace("Validation result document has been persisted into MongoDB with ID: {}", validationResult.getUuid());
+            validationResult.setExpectedResults(BlankValidationResultMaps.generateDefaultMap(authorsRequired));
+
+            repository.save(validationResult);
+        }
+
+        return optionalValidationResult.get();
     }
 
     public Optional<ValidationResult> fetchValidationResultDocument(Project project){

@@ -71,7 +71,7 @@ public class FileValidationRequestHandler {
             // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
             // if yes, then make sure that the list of file references has not been changed
 
-            submittableHandler.handleAssayDataForFileOperation(assayData, submissionId);
+            submittableHandler.handleSubmittable(assayData, submissionId, assayData.getDataType().getId());
         });
 
         List<Analysis> analysisList = analysisRepository.findBySubmissionId(submissionId);
@@ -80,7 +80,7 @@ public class FileValidationRequestHandler {
             // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
             // if yes, then make sure that the list of file references has not been changed
 
-            submittableHandler.handleAnalysisForFileOperation(analysis, submissionId);
+            submittableHandler.handleSubmittable(analysis, submissionId, analysis.getDataType().getId());
         });
 
         return false;

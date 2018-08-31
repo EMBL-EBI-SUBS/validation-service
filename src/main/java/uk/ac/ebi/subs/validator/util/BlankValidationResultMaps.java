@@ -5,6 +5,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +65,7 @@ public class BlankValidationResultMaps {
         return generateDefaultMap(FILE_REF_VALIDATION_SERVICES_REQUIRED);
     }
 
-    private static Map<ValidationAuthor, List<SingleValidationResult>> generateDefaultMap(List<ValidationAuthor> validationAuthors) {
+    public static Map<ValidationAuthor, List<SingleValidationResult>> generateDefaultMap(Collection<ValidationAuthor> validationAuthors) {
         Map<ValidationAuthor, List<SingleValidationResult>> blankValidationResultMap = new HashMap<>();
 
         for(ValidationAuthor author: validationAuthors) {
