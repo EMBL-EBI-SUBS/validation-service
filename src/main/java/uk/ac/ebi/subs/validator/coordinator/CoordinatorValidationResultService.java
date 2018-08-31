@@ -34,7 +34,7 @@ public class CoordinatorValidationResultService {
         this.repository = repository;
     }
 
-    public ValidationResult fetchValidationResultDocument(Submittable submittable, Collection<ValidationAuthor> authorsRequired){
+    public Optional<ValidationResult> fetchValidationResultDocument(Submittable submittable, Collection<ValidationAuthor> authorsRequired){
         Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(submittable);
 
         if (optionalValidationResult.isPresent()) {
@@ -45,7 +45,7 @@ public class CoordinatorValidationResultService {
             repository.save(validationResult);
         }
 
-        return optionalValidationResult.get();
+        return optionalValidationResult;
     }
 
     public Optional<ValidationResult> fetchValidationResultDocument(Project project){

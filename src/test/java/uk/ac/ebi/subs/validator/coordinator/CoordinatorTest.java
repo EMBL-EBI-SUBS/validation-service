@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,11 +15,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ValidationServiceApplication;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.TestUtils;
 import uk.ac.ebi.subs.validator.config.RabbitMQDependentTest;
 import uk.ac.ebi.subs.validator.data.ProjectValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.SampleValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+
+import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
 import static uk.ac.ebi.subs.validator.TestUtils.createProject;
@@ -40,18 +46,35 @@ public class CoordinatorTest {
     @Autowired
     private ValidationResultRepository validationResultRepository;
 
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
+
     private Sample sample;
     private Project project;
+    private DataType dataType;
+
 
     @Before
     public void setUp() {
-        validationResultRepository.deleteAll();
+        clearDbs();
+
+        dataType = TestUtils.createDataType("aDataType", Collections.emptyList())      ;
+        dataTypeRepository.insert(
+                dataType
+        );
 
         sample = TestUtils.createSample();
         validationResultRepository.save(createValidationResult(sample.getId()));
 
         project = createProject();
         validationResultRepository.save(createValidationResult(project.getId()));
+    }
+
+    @After
+    public void clearDbs() {
+        validationResultRepository.deleteAll();
+        dataTypeRepository.deleteAll();
     }
 
     @Rule
@@ -83,6 +106,7 @@ public class CoordinatorTest {
         Sample sample = createSample();
         SampleValidationEnvelopeToCoordinator envelope = new SampleValidationEnvelopeToCoordinator();
         envelope.setEntityToValidate(sample);
+        envelope.setDataTypeId(dataType.getId());
 
         try {
             coordinator.processSampleSubmission(envelope);
@@ -95,12 +119,10 @@ public class CoordinatorTest {
     public void testSubmissionWithProject() {
         ProjectValidationEnvelopeToCoordinator envelope = new ProjectValidationEnvelopeToCoordinator();
         envelope.setEntityToValidate(project);
+        envelope.setDataTypeId(dataType.getId());
+        envelope.setSubmissionId(UUID.randomUUID().toString());
 
-        try {
-            coordinator.processProjectSubmission(envelope);
-        } catch (Exception e) {
-            Assert.fail();
-        }
+        coordinator.processProjectSubmission(envelope);
     }
 
     private SampleValidationEnvelopeToCoordinator createSubmittableEnvelopeWithoutSample() {
@@ -108,6 +130,7 @@ public class CoordinatorTest {
 
         SampleValidationEnvelopeToCoordinator envelope = new SampleValidationEnvelopeToCoordinator();
         envelope.setSubmissionId(submissionId);
+        envelope.setDataTypeId(dataType.getId());
 
         return envelope;
     }

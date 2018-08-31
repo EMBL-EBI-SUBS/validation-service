@@ -62,7 +62,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on project {}", project.getId());
 
-        if (!submittableHandler.handleSubmittable(project,envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(project,envelope.getSubmissionId(),envelope.getDataTypeId())) {
             logger.error("Error handling project with id {}", project.getId());
         } else {
             logger.trace("Triggering chained validation from project {}", project.getId());
