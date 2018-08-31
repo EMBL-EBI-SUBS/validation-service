@@ -4,14 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.fileupload.File;
-import uk.ac.ebi.subs.data.submittable.Analysis;
-import uk.ac.ebi.subs.data.submittable.Assay;
-import uk.ac.ebi.subs.data.submittable.AssayData;
-import uk.ac.ebi.subs.data.submittable.Project;
-import uk.ac.ebi.subs.data.submittable.Sample;
-import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
@@ -34,7 +27,7 @@ public class CoordinatorValidationResultService {
         this.repository = repository;
     }
 
-    public Optional<ValidationResult> fetchValidationResultDocument(Submittable submittable, Collection<ValidationAuthor> authorsRequired){
+    public Optional<ValidationResult> fetchValidationResultDocument(Submittable submittable, Collection<ValidationAuthor> authorsRequired) {
         Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(submittable);
 
         if (optionalValidationResult.isPresent()) {
@@ -46,85 +39,6 @@ public class CoordinatorValidationResultService {
         }
 
         return optionalValidationResult;
-    }
-
-    public Optional<ValidationResult> fetchValidationResultDocument(Project project){
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(project);
-        ValidationResult validationResult = null;
-
-        if (optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forProject());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
-    }
-
-
-    public Optional<ValidationResult> fetchValidationResultDocument(Sample sample) {
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(sample);
-        ValidationResult validationResult = null;
-
-        if (optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forSample());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
-    }
-
-    public Optional<ValidationResult> fetchValidationResultDocument(Study study) {
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(study);
-        ValidationResult validationResult = null;
-
-        if (optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forStudy());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
-    }
-
-    public Optional<ValidationResult> fetchValidationResultDocument(Assay assay) {
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(assay);
-        ValidationResult validationResult = null;
-
-        if(optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forAssay());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
-    }
-
-    public Optional<ValidationResult> fetchValidationResultDocument(AssayData assayData) {
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(assayData);
-        ValidationResult validationResult = null;
-
-        if (optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forAssayData());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
-    }
-
-    public Optional<ValidationResult> fetchValidationResultDocument(Analysis analysis) {
-        Optional<ValidationResult> optionalValidationResult = findAndUpdateValidationResult(analysis);
-        ValidationResult validationResult = null;
-
-        if (optionalValidationResult.isPresent()) {
-            validationResult = optionalValidationResult.get();
-            validationResult.setExpectedResults(BlankValidationResultMaps.forAnalysis());
-
-            repository.save(validationResult);
-        }
-        return Optional.ofNullable(validationResult);
     }
 
     public Optional<ValidationResult> fetchValidationResultDocument(File file) {

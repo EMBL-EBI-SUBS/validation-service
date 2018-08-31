@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class CoordinatorValidationResultServiceTest {
         ValidationResult validationResult = new ValidationResult();
 
         for (int i = 0; i < 5; i++) {
-            validationResult = service.fetchValidationResultDocument(sample).get();
+            validationResult = service.fetchValidationResultDocument(sample, Collections.emptyList()).get();
         }
 
         Assert.assertEquals(5, validationResult.getVersion());
