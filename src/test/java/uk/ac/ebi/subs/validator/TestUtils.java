@@ -6,6 +6,7 @@ import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -15,10 +16,12 @@ import uk.ac.ebi.subs.validator.util.BlankValidationResultMaps;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by karoly on 18/07/2017.
@@ -129,5 +132,12 @@ public final class TestUtils {
         fileContentValidationResult1.setValidationStatus(SingleValidationResultStatus.Error);
         fileContentValidationResult1.setMessage(errorMessage);
         return fileContentValidationResult1;
+    }
+
+    public static DataType createDataType(String id, Collection<ValidationAuthor> validationAuthors){
+        DataType dataType = new DataType();
+        dataType.setId(id);
+        dataType.setRequiredValidationAuthors(validationAuthors.stream().map(Enum::name).collect(Collectors.toList()));
+        return dataType;
     }
 }

@@ -10,18 +10,22 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
+import uk.ac.ebi.subs.validator.TestUtils;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +53,24 @@ public class ChainedValidationServiceTest {
     private StudyRepository studyRepository;
     @Autowired
     private ValidationResultRepository validationResultRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
 
     private Submission submission;
     private Study study;
 
+    private DataType dataType;
+
+
     @Before
     public void setUp() {
         clearDB();
+
+        dataType = TestUtils.createDataType("aDataType", Collections.emptyList())      ;
+        dataTypeRepository.insert(
+                dataType
+        );
 
         submission = createSubmission();
         submissionRepository.insert(submission);
@@ -105,7 +120,7 @@ public class ChainedValidationServiceTest {
     @Test
     public void triggerChainedValidationTest() {
         service.triggerChainedValidation(study, submission.getId());
-        verify(submittableHandler, times(3)).handleSubmittable(any(Submittable.class), any(String.class));
+        verify(submittableHandler, times(3)).handleSubmittable(any(), any(), any());
     }
 
     private Submission createSubmission() {
@@ -121,6 +136,7 @@ public class ChainedValidationServiceTest {
             Sample sample = new Sample();
             sample.setId(UUID.randomUUID().toString());
             sample.setSubmission(submission);
+            sample.setDataType(dataType);
             sampleRepository.insert(sample);
             generateValidationResult(sample.getId());
         }
@@ -130,6 +146,7 @@ public class ChainedValidationServiceTest {
         Study study = new Study();
         study.setId(UUID.randomUUID().toString());
         study.setSubmission(submission);
+        study.setDataType(dataType);
         Team d = generateTestTeam();
         study.setTeam(d);
         generateValidationResult(study.getId());
@@ -156,5 +173,6 @@ public class ChainedValidationServiceTest {
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
         studyRepository.deleteAll();
+        dataTypeRepository.deleteAll();
     }
 }

@@ -98,6 +98,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
         sampleValidatorMessageEnvelopeExpander.expandEnvelope(sampleValidationMessageEnvelope);
         final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = sampleValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
+
         assertThat(savedSampleList, is(sampleList));
     }
 
