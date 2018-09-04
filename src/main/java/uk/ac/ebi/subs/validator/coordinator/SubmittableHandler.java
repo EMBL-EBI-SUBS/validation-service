@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 public class SubmittableHandler {
     private static final Logger logger = LoggerFactory.getLogger(SubmittableHandler.class);
 
-    private Collection<ValidationAuthor> standardAuthors = Arrays.asList(ValidationAuthor.Core, ValidationAuthor.JsonSchema);
-
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
@@ -74,7 +72,7 @@ public class SubmittableHandler {
 
     private Set<ValidationAuthor> validationAuthorsForDataType(DataType dataType) {
         Set<ValidationAuthor> authors = new HashSet<>();
-        authors.addAll(standardAuthors);
+        
         if (dataType.getRequiredValidationAuthors() != null) {
             authors.addAll(dataType.getRequiredValidationAuthors().stream().map(name -> ValidationAuthor.valueOf(name)).collect(Collectors.toList()));
         }
