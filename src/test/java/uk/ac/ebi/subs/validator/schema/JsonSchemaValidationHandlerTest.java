@@ -10,10 +10,9 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
-import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.coordinator.MesssageEnvelopeTestHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
@@ -21,8 +20,6 @@ import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,47 +30,45 @@ public class JsonSchemaValidationHandlerTest {
     JsonSchemaValidationHandler jsonSchemaValidationHandler;
     JsonSchemaValidationService jsonSchemaValidationService;
 
-    StudyRepository studyRepository;
+    DataTypeRepository dataTypeRepository;
+    ChecklistRepository checklistRepository;
 
     StudyValidationMessageEnvelope studyValidationMessageEnvelope;
 
     JsonSchemaValidationError error = new JsonSchemaValidationError(Arrays.asList("fake error message"), "/a/fake/path");
 
+    DataType dataType;
+    Checklist checklist;
+
     @Before
     public void setUp() {
-        studyValidationMessageEnvelope = MesssageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
+        dataTypeRepository = Mockito.mock(DataTypeRepository.class);
+        checklistRepository = Mockito.mock(ChecklistRepository.class);
 
-
-        studyRepository = Mockito.mock(StudyRepository.class);
-
-        Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap = new HashMap<>();
-        submittableRepositoryMap.put(Study.class, studyRepository);
-
-        DataType dataType = new DataType();
-        Checklist checklist = new Checklist();
-
+        dataType = new DataType();
         dataType.setValidationSchema(jsonStringToNode("{\"schema\": \"foo\"}"));
+        dataType.setId("dt1");
+
+        checklist = new Checklist();
         checklist.setValidationSchema(jsonStringToNode("{\"schema\": \"bar\"}"));
+        checklist.setId("cl1");
 
-
-        Study study = new Study();
-        study.setDataType(dataType);
-        study.setChecklist(checklist);
-
-
-        Mockito.when(studyRepository.findOne(studyValidationMessageEnvelope.getEntityToValidate().getId())).thenReturn(
-                study
-        );
-
+        studyValidationMessageEnvelope = MesssageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
+        studyValidationMessageEnvelope.setDataTypeId(dataType.getId());
+        studyValidationMessageEnvelope.setChecklistId(checklist.getId());
 
         jsonSchemaValidationService = Mockito.mock(JsonSchemaValidationService.class);
-        jsonSchemaValidationHandler = new JsonSchemaValidationHandler(submittableRepositoryMap, jsonSchemaValidationService);
+        jsonSchemaValidationHandler = new JsonSchemaValidationHandler(dataTypeRepository, checklistRepository, jsonSchemaValidationService);
 
     }
 
 
     @Test
     public void handleStudyValidation() {
+        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
+        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
+
+
 
         JsonNode expectedDtSchema = jsonStringToNode("{\"$schema\": \"foo\"}");
         JsonNode expectedClSchema = jsonStringToNode("{\"$schema\": \"bar\"}");
@@ -93,9 +88,10 @@ public class JsonSchemaValidationHandlerTest {
 
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSubmittableValidation(studyValidationMessageEnvelope);
 
-        Mockito.verify(jsonSchemaValidationService,Mockito.times(1)).validate(Mockito.eq(expectedDtSchema),Mockito.any());
 
-        Mockito.verify(jsonSchemaValidationService,Mockito.times(1)).validate(Mockito.eq(expectedClSchema),Mockito.any());
+        Mockito.verify(jsonSchemaValidationService, Mockito.times(1)).validate(Mockito.eq(expectedDtSchema), Mockito.any());
+
+        Mockito.verify(jsonSchemaValidationService, Mockito.times(1)).validate(Mockito.eq(expectedClSchema), Mockito.any());
 
 
         singleValidationResultsEnvelope.getSingleValidationResults();

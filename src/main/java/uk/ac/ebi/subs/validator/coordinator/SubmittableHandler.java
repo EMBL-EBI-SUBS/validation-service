@@ -48,7 +48,7 @@ public class SubmittableHandler {
      * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Project} entity and
      * the UUID of the {@link ValidationResult}
      */
-    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId) {
+    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId, String checklistId) {
         logger.trace("submittable {}; submissionId {}; dataTypeId {}",submittable,submissionId,dataTypeId);
         DataType dataType = dataTypeRepository.findOne(dataTypeId);
         Set<ValidationAuthor> validationAuthors = validationAuthorsForDataType(dataType);
@@ -56,7 +56,7 @@ public class SubmittableHandler {
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);
 
         if (validationResult.isPresent()) {
-            ValidationMessageEnvelope<?> messageEnvelope = validationEnvelopeFactory.buildValidationMessageEnvelope(submittable, validationResult.get());
+            ValidationMessageEnvelope<?> messageEnvelope = validationEnvelopeFactory.buildValidationMessageEnvelope(submittable, validationResult.get(),dataTypeId,checklistId);
             triggerValidationEvents(submittable, validationAuthors, messageEnvelope);
         }
         return validationResult.isPresent() && validationResult.get().getEntityUuid() != null;

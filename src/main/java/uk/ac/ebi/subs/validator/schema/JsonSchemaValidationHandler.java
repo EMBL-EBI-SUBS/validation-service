@@ -12,6 +12,8 @@ import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
@@ -37,15 +39,18 @@ import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValid
 @RequiredArgsConstructor
 public class JsonSchemaValidationHandler {
 
-    private Map<String, SubmittableRepository<? extends StoredSubmittable>> repositoryByClassSimpleName;
     private JsonSchemaValidationService validationService;
     private ObjectMapper mapper = new ObjectMapper();
     private SimpleModule module = new SimpleModule();
+    private DataTypeRepository dataTypeRepository;
+    private ChecklistRepository checklistRepository;
 
     public JsonSchemaValidationHandler(
-            Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap,
+            DataTypeRepository dataTypeRepository,
+            ChecklistRepository checklistRepository,
             JsonSchemaValidationService validationService) {
-        this.repositoryByClassSimpleName = repositoryByClassSimpleName(submittableRepositoryMap);
+        this.dataTypeRepository = dataTypeRepository;
+        this.checklistRepository = checklistRepository;
         this.validationService = validationService;
         this.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY); // Null fields and empty collections are not included in the serialization.
         this.module.addSerializer(LocalDate.class, new LocalDateCustomSerializer());
@@ -64,14 +69,16 @@ public class JsonSchemaValidationHandler {
 
     public SingleValidationResultsEnvelope handleSubmittableValidation(ValidationMessageEnvelope envelope) {
         Submittable submittable = envelope.getEntityToValidate();
-        String className = submittable.getClass().getSimpleName();
 
-        SubmittableRepository repo = repositoryByClassSimpleName.get(className);
+        DataType dataType = null;
+        Checklist checklist = null;
 
-        StoredSubmittable storedSubmittable = repo.findOne(submittable.getId());
-
-        DataType dataType = storedSubmittable.getDataType();
-        Checklist checklist = storedSubmittable.getChecklist();
+        if (envelope.getDataTypeId() != null){
+            dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        }
+        if (envelope.getChecklistId() != null){
+            checklist = checklistRepository.findOne(envelope.getChecklistId());
+        }
 
         List<JsonSchemaValidationError> errors = new ArrayList<>();
 

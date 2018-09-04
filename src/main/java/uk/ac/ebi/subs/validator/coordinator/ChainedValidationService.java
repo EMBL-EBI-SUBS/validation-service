@@ -27,7 +27,8 @@ public class ChainedValidationService {
                 .forEach(storedSubmittable -> submittableHandler.handleSubmittable(
                         storedSubmittable,
                         submissionId,
-                        storedSubmittable.getDataType().getId()
+                        (storedSubmittable.getDataType() == null) ? null : storedSubmittable.getDataType().getId(),
+                        (storedSubmittable.getChecklist() == null) ? null : storedSubmittable.getChecklist().getId()
                         )
                 );
     }
