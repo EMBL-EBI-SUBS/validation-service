@@ -116,8 +116,13 @@ public class JsonSchemaValidationHandler {
     private JsonNode fixSchemaKey(String storedSchemaJson) {
         try {
             ObjectNode schemaAsNode = mapper.readValue(storedSchemaJson, ObjectNode.class);
-            JsonNode value = schemaAsNode.remove("schema");
-            schemaAsNode.set("$schema", value);
+
+            if (schemaAsNode.has("schema") && !schemaAsNode.has("$schema")){
+                JsonNode value = schemaAsNode.remove("schema");
+                schemaAsNode.set("$schema", value);
+            }
+
+
             return schemaAsNode;
         } catch (IOException e) {
             throw new RuntimeException(e);
