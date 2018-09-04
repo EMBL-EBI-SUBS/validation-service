@@ -36,7 +36,6 @@ import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValid
 
 @Service
 @Data
-@RequiredArgsConstructor
 public class JsonSchemaValidationHandler {
 
     private JsonSchemaValidationService validationService;
