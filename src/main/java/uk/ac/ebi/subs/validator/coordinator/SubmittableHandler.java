@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -48,8 +49,16 @@ public class SubmittableHandler {
      */
     protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId, String checklistId) {
         logger.trace("submittable {}; submissionId {}; dataTypeId {}",submittable,submissionId,dataTypeId);
-        DataType dataType = dataTypeRepository.findOne(dataTypeId);
-        Set<ValidationAuthor> validationAuthors = validationAuthorsForDataType(dataType);
+
+        Set<ValidationAuthor> validationAuthors;
+
+        if (dataTypeId == null) {
+            validationAuthors = Collections.emptySet();
+        }
+        else {
+            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+            validationAuthors = validationAuthorsForDataType(dataType);
+        }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);
 
