@@ -46,9 +46,9 @@ public class CoordinatorListener {
     private ChainedValidationService chainedValidationService;
 
 
-
     /**
      * Project validator data entry point.
+     *
      * @param envelope contains the {@link Project} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_PROJECT_VALIDATOR)
@@ -62,7 +62,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on project {}", project.getId());
 
-        if (!submittableHandler.handleSubmittable(project,envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(project, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling project with id {}", project.getId());
         } else {
             logger.trace("Triggering chained validation from project {}", project.getId());
@@ -72,6 +72,7 @@ public class CoordinatorListener {
 
     /**
      * Sample validator data entry point.
+     *
      * @param envelope contains the {@link Sample} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_SAMPLE_VALIDATOR)
@@ -84,7 +85,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on sample with id {}", sample.getId());
 
-        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling sample with id {}", sample.getId());
         } else {
             logger.trace("Triggering chained validation from sample {}", sample.getId());
@@ -94,10 +95,11 @@ public class CoordinatorListener {
 
     /**
      * Study validator data entry point.
+     *
      * @param envelope contains the {@link Study} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_STUDY_VALIDATOR)
-    public void processStudySubmission(StudyValidationEnvelopeToCoordinator envelope){
+    public void processStudySubmission(StudyValidationEnvelopeToCoordinator envelope) {
         Study study = envelope.getEntityToValidate();
 
         if (study == null) {
@@ -106,7 +108,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on study with id {}", study.getId());
 
-        if (!submittableHandler.handleSubmittable(study,envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(study, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling study with id {}", study.getId());
         } else {
             logger.trace("Triggering chained validation from study {}", study.getId());
@@ -116,6 +118,7 @@ public class CoordinatorListener {
 
     /**
      * Assay validator data entry point.
+     *
      * @param envelope contains the {@link Assay} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_ASSAY_VALIDATOR)
@@ -128,7 +131,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay {}", assay.getId());
 
-        if (!submittableHandler.handleSubmittable(assay,envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(assay, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assay with id {}", assay.getId());
         } else {
             logger.trace("Triggering chained validation from assay {}", assay.getId());
@@ -138,6 +141,7 @@ public class CoordinatorListener {
 
     /**
      * AssayData validator data entry point.
+     *
      * @param envelope contains the {@link AssayData} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_ASSAY_DATA_VALIDATOR)
@@ -150,7 +154,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay data {}", assayData.getId());
 
-        if (!submittableHandler.handleSubmittable(assayData,envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(assayData, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assayData with id {}", assayData.getId());
         } else {
             fileValidationRequestHandler.handleFilesWhenSubmittableChanged(envelope.getSubmissionId());
@@ -162,6 +166,7 @@ public class CoordinatorListener {
 
     /**
      * Analysis validator data entry point.
+     *
      * @param envelope contains the {@link Analysis} entity to validate
      */
     @RabbitListener(queues = SUBMISSION_ANALYSIS_VALIDATOR)
@@ -174,7 +179,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on analysis {}", analysis.getId());
 
-        if (!submittableHandler.handleSubmittable(analysis,envelope.getSubmissionId(),envelope.getDataTypeId())) {
+        if (!submittableHandler.handleSubmittable(analysis, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling analysis with id {}", analysis.getId());
         } else {
             fileValidationRequestHandler.handleFilesWhenSubmittableChanged(envelope.getSubmissionId());
@@ -186,6 +191,7 @@ public class CoordinatorListener {
 
     /**
      * File reference existence validator data entry point.
+     *
      * @param envelope contains the {@link File} entity to validate
      */
     @RabbitListener(queues = FILE_REF_VALIDATOR)
@@ -208,6 +214,7 @@ public class CoordinatorListener {
 
     /**
      * File deletion entry point to trigger a file reference validation to the given submission.
+     *
      * @param fileDeletedMessage contains the ID of the submission to validate
      */
     @RabbitListener(queues = FILE_DELETION_VALIDATOR)
@@ -222,6 +229,7 @@ public class CoordinatorListener {
     /**
      * Submittable deletion entry point for triggering a file reference and chained validation
      * based on the given submission ID..
+     *
      * @param storedSubmittableDeleteMessage contains the ID of the submission to validate
      */
     @RabbitListener(queues = SUBMISSION_SUBMITTABLE_DELETED)

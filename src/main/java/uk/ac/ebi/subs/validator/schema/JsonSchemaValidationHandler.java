@@ -4,28 +4,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.component.StudyDataType;
-import uk.ac.ebi.subs.data.submittable.Assay;
-import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
-import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
-import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
-import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
+import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
-import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generatePassingSingleValidationResult;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValidationResultsEnvelope;
@@ -34,89 +38,99 @@ import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValid
 @Data
 public class JsonSchemaValidationHandler {
 
-    // Temporary solution - schema url should be provided not hardcoded
-    @Value("${sample.schema.url}")
-    private String sampleSchemaUrl;
-    @Value("${study.schema.url}")
-    private String studySchemaUrl;
-    @Value("${mlstudy.schema.url}")
-    private String mlStudySchemaUrl;
-    @Value("${assay.schema.url}")
-    private String assaySchemaUrl;
-    @Value("${mlassay.schema.url}")
-    private String mlAssaySchemaUrl;
-    @Value("${assaydata.schema.url}")
-    private String assayDataSchemaUrl;
-    @Value("${eva.seqvar.analysis.schema.url}")
-    private String evaSeqVarAnalysisSchemaUrl;
-
     private JsonSchemaValidationService validationService;
-    private SchemaService schemaService;
     private ObjectMapper mapper = new ObjectMapper();
     private SimpleModule module = new SimpleModule();
+    private DataTypeRepository dataTypeRepository;
+    private ChecklistRepository checklistRepository;
 
-    public JsonSchemaValidationHandler(JsonSchemaValidationService validationService, SchemaService schemaService) {
+    public JsonSchemaValidationHandler(
+            DataTypeRepository dataTypeRepository,
+            ChecklistRepository checklistRepository,
+            JsonSchemaValidationService validationService) {
+        this.dataTypeRepository = dataTypeRepository;
+        this.checklistRepository = checklistRepository;
         this.validationService = validationService;
-        this.schemaService = schemaService;
         this.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY); // Null fields and empty collections are not included in the serialization.
         this.module.addSerializer(LocalDate.class, new LocalDateCustomSerializer());
         this.mapper.registerModule(module);
     }
 
-    public SingleValidationResultsEnvelope handleSampleValidation(SampleValidationMessageEnvelope envelope) {
-        JsonNode sampleSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), sampleSchemaUrl); // TODO - handle logic on which schema to use for validation
+    private Map<String, SubmittableRepository<? extends StoredSubmittable>> repositoryByClassSimpleName(Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap) {
+        Map<String, SubmittableRepository<? extends StoredSubmittable>> map = new HashMap<>();
 
-        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(sampleSchema, mapper.valueToTree(envelope.getEntityToValidate()));
-        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
+        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
+            String className = entry.getKey().getSimpleName();
+            map.put(className, entry.getValue());
+        }
+        return map;
+    }
 
+    public SingleValidationResultsEnvelope handleSubmittableValidation(ValidationMessageEnvelope envelope) {
+        Submittable submittable = envelope.getEntityToValidate();
+
+        DataType dataType = null;
+        Checklist checklist = null;
+
+        if (envelope.getDataTypeId() != null){
+            dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        }
+        if (envelope.getChecklistId() != null){
+            checklist = checklistRepository.findOne(envelope.getChecklistId());
+        }
+
+        List<JsonSchemaValidationError> errors = new ArrayList<>();
+
+        JsonNode documentToValidate = mapper.valueToTree(submittable);
+
+        if (dataType != null && dataType.getValidationSchema() != null) {
+            JsonNode schema = fixSchemaKey(dataType.getValidationSchema());
+
+
+            List<JsonSchemaValidationError> errors1 = validationService.validate(schema, documentToValidate);
+            errors.addAll(errors1);
+        }
+
+        if (checklist != null && checklist.getValidationSchema() != null) {
+            JsonNode schema = fixSchemaKey(checklist.getValidationSchema());
+
+            List<JsonSchemaValidationError> errors1 = validationService.validate(schema, documentToValidate);
+            errors.addAll(errors1);
+        }
+
+
+        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, errors);
         return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
 
-    public SingleValidationResultsEnvelope handleStudyValidation(StudyValidationMessageEnvelope envelope) {
-        String typeName = envelope.getEntityToValidate().getClass().getTypeName();
-        String respectiveSchemaUrl = getRespectiveSchemaUrl(envelope.getEntityToValidate().getStudyType(),typeName);
+    /**
+     * Our current version of Mongo cannot store documents with keys that start with '$'
+     * JSON schema must contain a '$schema' key.
+     * <p>
+     * We re-write the schema, to convert 'schema' to '$schema'
+     *
+     * @param storedSchemaJson
+     * @return the fixed schema, converted to a JsonNode
+     */
+    private JsonNode fixSchemaKey(String storedSchemaJson) {
+        try {
+            ObjectNode schemaAsNode = mapper.readValue(storedSchemaJson, ObjectNode.class);
 
-        JsonNode studySchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), respectiveSchemaUrl);
+            if (schemaAsNode.has("schema") && !schemaAsNode.has("$schema")){
+                JsonNode value = schemaAsNode.remove("schema");
+                schemaAsNode.set("$schema", value);
+            }
 
-        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(studySchema, mapper.valueToTree(envelope.getEntityToValidate()));
-        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
 
-        return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
-                envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
+            return schemaAsNode;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
-    public SingleValidationResultsEnvelope handleAssayValidation(AssayValidationMessageEnvelope envelope) {
-        String typeName = envelope.getEntityToValidate().getClass().getTypeName();
-        String respectiveSchemaUrl = getRespectiveSchemaUrl(envelope.getStudy().getBaseSubmittable().getStudyType(),typeName);
-        JsonNode assaySchema = schemaService.getSchemaFor(typeName, respectiveSchemaUrl);
-
-        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assaySchema, mapper.valueToTree(envelope.getEntityToValidate()));
-        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
-
-        return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
-                envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
-    }
-
-    public SingleValidationResultsEnvelope handleAssayDataValidation(AssayDataValidationMessageEnvelope envelope) {
-        JsonNode assayDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), assayDataSchemaUrl); // TODO - handle logic on which schema to use for validation
-
-        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(assayDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
-        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
-
-        return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
-                envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
-    }
-
-    public SingleValidationResultsEnvelope handleAnalysisValidation(AnalysisValidationEnvelope envelope) {
-        JsonNode analysisDataSchema = schemaService.getSchemaFor(envelope.getEntityToValidate().getClass().getTypeName(), evaSeqVarAnalysisSchemaUrl); // TODO - handle logic on which schema to use for validation
-
-        List<JsonSchemaValidationError> jsonSchemaValidationErrors = validationService.validate(analysisDataSchema, mapper.valueToTree(envelope.getEntityToValidate()));
-        List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, jsonSchemaValidationErrors);
-
-        return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
-                envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
-    }
 
     // -- Helper methods -- //
     private List<SingleValidationResult> getSingleValidationResults(ValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
@@ -146,18 +160,5 @@ public class JsonSchemaValidationHandler {
         return validationResult;
     }
 
-    private String getRespectiveSchemaUrl(StudyDataType studyDataType, String submittableType) {
-        switch (studyDataType) {
-            case Metabolomics_GCMS:
-            case Metabolomics_LCMS:
-            case Metabolomics_ImagingMS:
-            case Metabolomics_NMR:
-            case Metabolomics_ImagingNMR:
-                return submittableType == Assay.class.getTypeName() ? mlAssaySchemaUrl :
-                        mlStudySchemaUrl;
-        }
-        return submittableType ==  Assay.class.getTypeName() ? assaySchemaUrl :
-                        studySchemaUrl;
-    }
 
 }

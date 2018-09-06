@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -26,8 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SubmittableHandler {
     private static final Logger logger = LoggerFactory.getLogger(SubmittableHandler.class);
-
-    private Collection<ValidationAuthor> standardAuthors = Arrays.asList(ValidationAuthor.Core, ValidationAuthor.JsonSchema);
 
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -48,15 +47,23 @@ public class SubmittableHandler {
      * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Project} entity and
      * the UUID of the {@link ValidationResult}
      */
-    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId) {
+    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId, String checklistId) {
         logger.trace("submittable {}; submissionId {}; dataTypeId {}",submittable,submissionId,dataTypeId);
-        DataType dataType = dataTypeRepository.findOne(dataTypeId);
-        Set<ValidationAuthor> validationAuthors = validationAuthorsForDataType(dataType);
+
+        Set<ValidationAuthor> validationAuthors;
+
+        if (dataTypeId == null) {
+            validationAuthors = Collections.emptySet();
+        }
+        else {
+            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+            validationAuthors = validationAuthorsForDataType(dataType);
+        }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);
 
         if (validationResult.isPresent()) {
-            ValidationMessageEnvelope<?> messageEnvelope = validationEnvelopeFactory.buildValidationMessageEnvelope(submittable, validationResult.get());
+            ValidationMessageEnvelope<?> messageEnvelope = validationEnvelopeFactory.buildValidationMessageEnvelope(submittable, validationResult.get(),dataTypeId,checklistId);
             triggerValidationEvents(submittable, validationAuthors, messageEnvelope);
         }
         return validationResult.isPresent() && validationResult.get().getEntityUuid() != null;
@@ -74,7 +81,7 @@ public class SubmittableHandler {
 
     private Set<ValidationAuthor> validationAuthorsForDataType(DataType dataType) {
         Set<ValidationAuthor> authors = new HashSet<>();
-        authors.addAll(standardAuthors);
+        
         if (dataType.getRequiredValidationAuthors() != null) {
             authors.addAll(dataType.getRequiredValidationAuthors().stream().map(name -> ValidationAuthor.valueOf(name)).collect(Collectors.toList()));
         }

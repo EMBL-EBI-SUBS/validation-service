@@ -34,7 +34,7 @@ public class ValidationEnvelopeFactory {
     @NonNull
     private AnalysisValidationMessageEnvelopeExpander analysisValidationMessageEnvelopeExpander;
 
-    public ValidationMessageEnvelope<?> buildValidationMessageEnvelope(Submittable submittable, ValidationResult validationResult){
+    public ValidationMessageEnvelope<?> buildValidationMessageEnvelope(Submittable submittable, ValidationResult validationResult, String dataTypeId, String checklistId){
 
         ValidationMessageEnvelope<?> envelope = null;
 
@@ -107,6 +107,9 @@ public class ValidationEnvelopeFactory {
         if (envelope == null){
             envelope = new ValidationMessageEnvelope(validationResult.getUuid(), validationResult.getVersion(), (BaseSubmittable) submittable);
         }
+
+        envelope.setDataTypeId(dataTypeId);
+        envelope.setChecklistId(checklistId);
 
         return envelope;
     }

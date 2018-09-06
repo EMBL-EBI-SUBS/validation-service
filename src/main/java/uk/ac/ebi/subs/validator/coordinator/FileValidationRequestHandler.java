@@ -66,21 +66,32 @@ public class FileValidationRequestHandler {
 
     boolean handleSubmittableForFileReferenceValidation(String submissionId) {
         List<AssayData> assayDataList = assayDataRepository.findBySubmissionId(submissionId);
-        assayDataList.forEach( assayData -> {
+        assayDataList.forEach(assayData -> {
 
-            // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
-            // if yes, then make sure that the list of file references has not been changed
+                    // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
+                    // if yes, then make sure that the list of file references has not been changed
 
-            submittableHandler.handleSubmittable(assayData, submissionId, assayData.getDataType().getId());
-        });
+                    submittableHandler.handleSubmittable(
+                            assayData,
+                            submissionId,
+                            (assayData.getDataType() == null) ? null : assayData.getDataType().getId(),
+                            (assayData.getChecklist() == null) ? null : assayData.getChecklist().getId()
+                    );
+                }
+        );
 
         List<Analysis> analysisList = analysisRepository.findBySubmissionId(submissionId);
-        analysisList.forEach( analysis -> {
+        analysisList.forEach(analysis -> {
 
             // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
             // if yes, then make sure that the list of file references has not been changed
 
-            submittableHandler.handleSubmittable(analysis, submissionId, analysis.getDataType().getId());
+            submittableHandler.handleSubmittable(
+                    analysis,
+                    submissionId,
+                    (analysis.getDataType() == null) ? null : analysis.getDataType().getId(),
+                    (analysis.getChecklist() == null) ? null : analysis.getChecklist().getId()
+            );
         });
 
         return false;
