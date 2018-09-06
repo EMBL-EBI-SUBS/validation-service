@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -98,7 +99,7 @@ public class AssayValidationMessageEnvelopeExpanderTest {
 
         assayValidatorMessageEnvelopeExpander.expandEnvelope(assayValidationMessageEnvelope);
         final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = assayValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
-        assertThat(savedSampleList, is(sampleList));
+        SampleAssertionHelper.assertSampleList(savedSampleList, sampleList);
     }
 
     @Test
@@ -125,7 +126,7 @@ public class AssayValidationMessageEnvelopeExpanderTest {
 
         assayValidatorMessageEnvelopeExpander.expandEnvelope(assayValidationMessageEnvelope);
         final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = assayValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
-        assertThat(savedSampleList, is(sampleList));
+        SampleAssertionHelper.assertSampleList(savedSampleList, sampleList);
     }
 
     private AssayValidationMessageEnvelope createAssayValidationMessageEnvelope() {
@@ -137,5 +138,4 @@ public class AssayValidationMessageEnvelopeExpanderTest {
         assayValidationMessageEnvelope.setEntityToValidate(submittableAssay);
         return assayValidationMessageEnvelope;
     }
-
 }

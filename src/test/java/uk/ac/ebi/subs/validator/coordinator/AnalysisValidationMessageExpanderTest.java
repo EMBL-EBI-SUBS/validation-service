@@ -24,6 +24,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.UUID;
 
@@ -88,10 +89,15 @@ public class AnalysisValidationMessageExpanderTest {
 
         expander.expandEnvelope(analysisValidationEnvelope);
 
-
         assertThat(analysisValidationEnvelope.getStudies().get(0).getBaseSubmittable(), is(savedStudy));
-        assertThat(analysisValidationEnvelope.getSamples().get(0).getBaseSubmittable(), is(savedSample));
-
+        final Submittable<uk.ac.ebi.subs.data.submittable.Sample> sampleFromExpandedEnvelope = analysisValidationEnvelope.getSamples().get(0);
+        assertThat(sampleFromExpandedEnvelope.getAccession(), is(savedSample.getAccession()));
+        assertThat(sampleFromExpandedEnvelope.getId(), is(savedSample.getId()));
+        assertThat(sampleFromExpandedEnvelope.getAlias(), is(savedSample.getAlias()));
+        assertThat(sampleFromExpandedEnvelope.getDescription(), is(savedSample.getDescription()));
+        assertThat(sampleFromExpandedEnvelope.getSubmissionId(), is(savedSample.getSubmission().getId()));
+        assertThat(sampleFromExpandedEnvelope.getTeam(), is(savedSample.getTeam()));
+        assertThat(sampleFromExpandedEnvelope.getTitle(), is(savedSample.getTitle()));
     }
 
     private AnalysisValidationEnvelope createAnalysisValidationEnvelope() {
