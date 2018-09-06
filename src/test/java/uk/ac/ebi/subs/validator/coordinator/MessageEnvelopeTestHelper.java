@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
-public class MesssageEnvelopeTestHelper {
+public class MessageEnvelopeTestHelper {
 
     static Submission saveNewSubmission(SubmissionStatusRepository submissionStatusRepository, SubmissionRepository submissionRepository, Team team) {
         Submission submission = createNewSubmission(team);
@@ -143,7 +143,7 @@ public class MesssageEnvelopeTestHelper {
 
 
     public static List<Protocol> createAndSaveProtocols(ProtocolRepository protocolRepository, Submission submission, Team team) {
-        List<Protocol> protocols = MesssageEnvelopeTestHelper.createProtocols(submission, team, 3);
+        List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
         return protocolRepository.save(protocols);
     }
 

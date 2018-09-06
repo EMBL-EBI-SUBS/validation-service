@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.submittable.Sample;
-import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 
 import java.io.BufferedReader;
@@ -31,8 +29,6 @@ import static uk.ac.ebi.subs.validator.schema.SchemaTestHelper.createCustomObjec
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Category(MongoDBDependentTest.class)
-// Spring auto configuration creates the MongoDB client beans and tries to connect.
 public class JsonSchemaValidationServiceTest {
 
     @Autowired
