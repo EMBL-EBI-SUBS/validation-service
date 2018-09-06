@@ -10,10 +10,9 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
-import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
-import uk.ac.ebi.subs.validator.coordinator.MesssageEnvelopeTestHelper;
+import uk.ac.ebi.subs.validator.coordinator.MessageEnvelopeTestHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
@@ -53,7 +52,7 @@ public class JsonSchemaValidationHandlerTest {
         checklist.setValidationSchema(jsonStringToNode("{\"schema\": \"bar\"}"));
         checklist.setId("cl1");
 
-        studyValidationMessageEnvelope = MesssageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
+        studyValidationMessageEnvelope = MessageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
         studyValidationMessageEnvelope.setDataTypeId(dataType.getId());
         studyValidationMessageEnvelope.setChecklistId(checklist.getId());
 

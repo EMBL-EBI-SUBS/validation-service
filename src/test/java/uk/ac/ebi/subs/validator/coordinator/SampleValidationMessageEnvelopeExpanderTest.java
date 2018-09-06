@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.validator.coordinator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -15,13 +14,9 @@ import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
-import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
-import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,7 +28,6 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = {SampleRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
-@Category(MongoDBDependentTest.class)
 @EnableAutoConfiguration
 @SpringBootTest(classes = SampleValidationMessageEnvelopeExpander.class)
 public class SampleValidationMessageEnvelopeExpanderTest {
@@ -56,9 +50,9 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
     @Before
     public void setup() {
-        team = MesssageEnvelopeTestHelper.createTeam();
-        submission = MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
-        savedSampleList = MesssageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1);
+        team = MessageEnvelopeTestHelper.createTeam();
+        submission = MessageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
+        savedSampleList = MessageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1);
     }
 
     @After
@@ -115,7 +109,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeSameSubmissionByAccessionNotInRepo() throws Exception {
         final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope();
-        List<Sample>notSavedSampleList = MesssageEnvelopeTestHelper.createSamples(submission, team, 1);
+        List<Sample>notSavedSampleList = MessageEnvelopeTestHelper.createSamples(submission, team, 1);
 
         for (Sample sample : notSavedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
