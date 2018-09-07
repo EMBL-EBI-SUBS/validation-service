@@ -45,11 +45,11 @@ public class JsonSchemaValidationHandlerTest {
         checklistRepository = Mockito.mock(ChecklistRepository.class);
 
         dataType = new DataType();
-        dataType.setValidationSchema(jsonStringToNode("{\"schema\": \"foo\"}"));
+        dataType.setValidationSchema(jsonStringToNode("{\"#dollar#schema\": \"foo\"}"));
         dataType.setId("dt1");
 
         checklist = new Checklist();
-        checklist.setValidationSchema(jsonStringToNode("{\"schema\": \"bar\"}"));
+        checklist.setValidationSchema(jsonStringToNode("{\"#dollar#schema\": \"bar\"}"));
         checklist.setId("cl1");
 
         studyValidationMessageEnvelope = MessageEnvelopeTestHelper.getStudyValidationMessageEnvelope();

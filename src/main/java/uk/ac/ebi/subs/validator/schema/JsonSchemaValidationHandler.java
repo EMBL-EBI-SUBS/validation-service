@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Checklist;
@@ -23,7 +21,6 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.ebi.subs.validator.schema.SchemaConverterFromMongo.fixStoredJson;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generatePassingSingleValidationResult;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValidationResultsEnvelope;
 
@@ -84,7 +82,7 @@ public class JsonSchemaValidationHandler {
         JsonNode documentToValidate = mapper.valueToTree(submittable);
 
         if (dataType != null && dataType.getValidationSchema() != null) {
-            JsonNode schema = fixSchemaKey(dataType.getValidationSchema());
+            JsonNode schema = fixStoredJson(dataType.getValidationSchema());
 
 
             List<JsonSchemaValidationError> errors1 = validationService.validate(schema, documentToValidate);
@@ -92,7 +90,7 @@ public class JsonSchemaValidationHandler {
         }
 
         if (checklist != null && checklist.getValidationSchema() != null) {
-            JsonNode schema = fixSchemaKey(checklist.getValidationSchema());
+            JsonNode schema = fixStoredJson(checklist.getValidationSchema());
 
             List<JsonSchemaValidationError> errors1 = validationService.validate(schema, documentToValidate);
             errors.addAll(errors1);
@@ -103,34 +101,6 @@ public class JsonSchemaValidationHandler {
         return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
     }
-
-    /**
-     * Our current version of Mongo cannot store documents with keys that start with '$'
-     * JSON schema must contain a '$schema' key.
-     * <p>
-     * We re-write the schema, to convert 'schema' to '$schema'
-     *
-     * @param storedSchemaJson
-     * @return the fixed schema, converted to a JsonNode
-     */
-    private JsonNode fixSchemaKey(String storedSchemaJson) {
-        try {
-            ObjectNode schemaAsNode = mapper.readValue(storedSchemaJson, ObjectNode.class);
-
-            if (schemaAsNode.has("schema") && !schemaAsNode.has("$schema")){
-                JsonNode value = schemaAsNode.remove("schema");
-                schemaAsNode.set("$schema", value);
-            }
-
-
-            return schemaAsNode;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-    }
-
 
     // -- Helper methods -- //
     private List<SingleValidationResult> getSingleValidationResults(ValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
