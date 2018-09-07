@@ -64,7 +64,7 @@ public class FileValidationRequestHandler {
         return false;
     }
 
-    boolean handleSubmittableForFileReferenceValidation(String submissionId) {
+    void handleSubmittableForFileReferenceValidation(String submissionId) {
         List<AssayData> assayDataList = assayDataRepository.findBySubmissionId(submissionId);
         assayDataList.forEach(assayData -> {
 
@@ -93,8 +93,6 @@ public class FileValidationRequestHandler {
                     (analysis.getChecklist() == null) ? null : analysis.getChecklist().getId()
             );
         });
-
-        return false;
     }
 
     boolean handleFilesWhenSubmittableChanged(String submissionId) {

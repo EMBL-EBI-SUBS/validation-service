@@ -207,9 +207,8 @@ public class CoordinatorListener {
         if (!fileValidationRequestHandler.handleFile(fileToValidate, envelope.getSubmissionId())) {
             logger.error("Error handling file to validate with id {}", fileToValidate.getId());
         }
-        if (!fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(envelope.getSubmissionId())) {
-            logger.error("Error handling submittables to validate their file references for submission (id: {})", envelope.getSubmissionId());
-        }
+        fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(envelope.getSubmissionId());
+        logger.trace("Handled submittables for file reference validation - a new file has been added.");
     }
 
     /**
@@ -221,9 +220,8 @@ public class CoordinatorListener {
     public void processFileDeletionRequest(FileDeletedMessage fileDeletedMessage) {
         String submissionID = fileDeletedMessage.getSubmissionId();
 
-        if (!fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(submissionID)) {
-            logger.error("Error handling file deletion for submission (id: {})", submissionID);
-        }
+        fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(submissionID);
+        logger.trace("Handled submittables for file reference validation - a file has been deleted.");
     }
 
     /**
