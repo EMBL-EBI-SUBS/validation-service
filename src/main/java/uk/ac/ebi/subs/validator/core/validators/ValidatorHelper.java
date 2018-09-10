@@ -12,10 +12,14 @@ import java.util.Map;
 
 public class ValidatorHelper {
 
-    public static SingleValidationResult getDefaultSingleValidationResult(String id, ValidationAuthor validationAuthor) {
+    public static SingleValidationResult singleValidationResult(String id, ValidationAuthor validationAuthor, SingleValidationResultStatus status) {
         SingleValidationResult singleValidationResult = new SingleValidationResult(validationAuthor, id);
-        singleValidationResult.setValidationStatus(SingleValidationResultStatus.Pass);
+        singleValidationResult.setValidationStatus(status);
         return singleValidationResult;
+    }
+
+    public static SingleValidationResult getDefaultSingleValidationResult(String id, ValidationAuthor validationAuthor) {
+        return singleValidationResult(id,validationAuthor,SingleValidationResultStatus.Pass);
     }
 
     public static List<SingleValidationResult> validateAttribute(Map<String, Collection<Attribute>> attributes,
