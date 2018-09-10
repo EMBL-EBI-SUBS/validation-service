@@ -23,8 +23,6 @@ import uk.ac.ebi.subs.validator.data.ProjectValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.SampleValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.StudyValidationEnvelopeToCoordinator;
 
-import java.util.HashSet;
-
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.FILE_DELETION_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.FILE_REF_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_ANALYSIS_VALIDATOR;
