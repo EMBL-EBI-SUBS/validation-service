@@ -10,7 +10,9 @@ import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.core.handlers.ValidationTestHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -81,8 +83,11 @@ public class ReferenceRequirementsValidatorTest {
         this.studyRepository = Mockito.mock(StudyRepository.class);
         this.validationResultRepository = Mockito.mock(ValidationResultRepository.class);
 
+        Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> repositoryMap = new HashMap<>();
+        repositoryMap.put(uk.ac.ebi.subs.repository.model.Study.class,studyRepository);
+
         //finally, an actual validator
-        this.validator = new ReferenceRequirementsValidator(studyRepository, validationResultRepository);
+        this.validator = new ReferenceRequirementsValidator(repositoryMap,validationResultRepository);
 
 
     }
@@ -163,17 +168,15 @@ public class ReferenceRequirementsValidatorTest {
 
         Mockito.when(validationResultRepository.findOne(storedStudyWithPendingResults.getValidationResult().getUuid()))
                 .thenReturn(
-                        storedStudyWithPendingResults.getValidationResult(),
-                        storedStudyWithPassingResults.getValidationResult()
+                        storedStudyWithPendingResults.getValidationResult(), //pending results on first call
+                        storedStudyWithPassingResults.getValidationResult()  //passing results on second call
                 );
 
 
         List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertTrue(results.isEmpty());
 
-
         Mockito.verify(studyRepository).findOne(referencedEntity.getId());
-
     }
 
     @Test
@@ -232,6 +235,5 @@ public class ReferenceRequirementsValidatorTest {
 
         return storedStudy;
     }
-
 
 }

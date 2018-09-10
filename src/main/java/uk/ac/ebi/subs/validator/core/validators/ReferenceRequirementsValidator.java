@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ReferenceRequirementsValidator {
 
     @NonNull
-    private StudyRepository studyRepository;
+    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
 
     @NonNull
     private ValidationResultRepository validationResultRepository;
@@ -169,10 +169,16 @@ public class ReferenceRequirementsValidator {
     }
 
     private Pair<DataType, ValidationResult> fetchDataTypeAndValidationResult(Submittable submittable) {
-        SubmittableRepository repo = null;
 
-        if (submittable instanceof Study) {
-            repo = studyRepository;
+        SubmittableRepository repo = null;
+        Class submittableClass = submittable.getClass();
+        
+        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()){
+            Class repositoryModelClass = entry.getKey();
+
+            if (submittableClass.isAssignableFrom(repositoryModelClass)){
+                repo = entry.getValue();
+            }
         }
 
         StoredSubmittable storedSubmittable = null;
