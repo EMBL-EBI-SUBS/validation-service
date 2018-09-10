@@ -44,11 +44,11 @@ public class SubmittableHandler {
      * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Project} entity and
      * the UUID of the {@link ValidationResult}
      */
-    protected boolean handleSubmittable(Set<ValidationAuthor> initialValidationAuthors, Submittable submittable,
-                                        String submissionId, String dataTypeId, String checklistId) {
+    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId,
+                                        String checklistId) {
         logger.trace("submittable {}; submissionId {}; dataTypeId {}",submittable,submissionId,dataTypeId);
 
-        Set<ValidationAuthor> validationAuthors = initialValidationAuthors;
+        Set<ValidationAuthor> validationAuthors = new HashSet<>();
 
         if (dataTypeId != null) {
             DataType dataType = dataTypeRepository.findOne(dataTypeId);

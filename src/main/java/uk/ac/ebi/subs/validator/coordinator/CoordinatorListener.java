@@ -64,7 +64,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on project {}", project.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), project, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(project, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling project with id {}", project.getId());
         } else {
@@ -88,7 +88,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on sample with id {}", sample.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), sample, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling sample with id {}", sample.getId());
         } else {
@@ -112,7 +112,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on study with id {}", study.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), study, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(study, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling study with id {}", study.getId());
         } else {
@@ -136,7 +136,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay {}", assay.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), assay, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(assay, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assay with id {}", assay.getId());
         } else {
@@ -160,7 +160,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay data {}", assayData.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), assayData, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(assayData, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assayData with id {}", assayData.getId());
         } else {
@@ -186,7 +186,7 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on analysis {}", analysis.getId());
 
-        if (!submittableHandler.handleSubmittable(new HashSet<>(), analysis, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(analysis, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling analysis with id {}", analysis.getId());
         } else {

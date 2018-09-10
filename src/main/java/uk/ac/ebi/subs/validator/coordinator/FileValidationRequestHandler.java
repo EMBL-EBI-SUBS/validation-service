@@ -75,7 +75,6 @@ public class FileValidationRequestHandler {
             // if yes, then make sure that the list of file references has not been changed
 
             submittableHandler.handleSubmittable(
-                    new HashSet<>(Collections.singletonList(ValidationAuthor.FileReference)),
                     assayData,
                     submissionId,
                     (assayData.getDataType() == null) ? null : assayData.getDataType().getId(),
@@ -90,7 +89,6 @@ public class FileValidationRequestHandler {
             // if yes, then make sure that the list of file references has not been changed
 
             submittableHandler.handleSubmittable(
-                    new HashSet<>(Collections.singletonList(ValidationAuthor.FileReference)),
                     analysis,
                     submissionId,
                     (analysis.getDataType() == null) ? null : analysis.getDataType().getId(),

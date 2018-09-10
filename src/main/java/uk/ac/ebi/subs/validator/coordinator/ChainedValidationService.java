@@ -27,7 +27,6 @@ public class ChainedValidationService {
     public void triggerChainedValidation(Submittable triggerSubmittable, String submissionId) {
         streamSubmittablesInSubmissionExceptTriggerSubmittable(triggerSubmittable, submissionId)
                 .forEach(storedSubmittable -> submittableHandler.handleSubmittable(
-                        new HashSet<ValidationAuthor>(),
                         storedSubmittable,
                         submissionId,
                         (storedSubmittable.getDataType() == null) ? null : storedSubmittable.getDataType().getId(),

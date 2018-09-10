@@ -119,7 +119,7 @@ public class ChainedValidationServiceTest {
     @Test
     public void triggerChainedValidationTest() {
         service.triggerChainedValidation(study, submission.getId());
-        verify(submittableHandler, times(3)).handleSubmittable(any(), any(), any(), any(), any());
+        verify(submittableHandler, times(3)).handleSubmittable(any(), any(), any(), any());
     }
 
     private Submission createSubmission() {
