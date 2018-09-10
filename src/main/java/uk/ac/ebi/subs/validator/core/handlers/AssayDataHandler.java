@@ -4,6 +4,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
@@ -27,12 +29,19 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     @NonNull
     private AttributeValidator attributeValidator;
 
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
+
     @Override
     List<SingleValidationResult> validateSubmittable(AssayDataValidationMessageEnvelope envelope) {
         AssayData assayData = envelope.getEntityToValidate();
 
+        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+
+
         return refValidator.validate(
-                assayData.getId(),
+                assayData,
+                dataType,
                 assayData.getAssayRefs(),
                 envelope.getAssays()
         );

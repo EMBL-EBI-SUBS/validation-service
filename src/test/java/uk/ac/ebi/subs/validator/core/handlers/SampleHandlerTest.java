@@ -4,10 +4,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
@@ -46,11 +48,12 @@ public class SampleHandlerTest {
 
     private SampleRelationship sampleRelationship;
     private Submittable<Sample> wrappedSample;
+    private DataTypeRepository dataTypeRepository = Mockito.mock(DataTypeRepository.class);
 
     @Before
     public void buildUp() {
         //setup the handler
-        sampleHandler = new SampleHandler(referenceValidator, attributeValidator);
+        sampleHandler = new SampleHandler(referenceValidator, attributeValidator,dataTypeRepository);
 
         //refs
         sampleRelationship = new SampleRelationship();

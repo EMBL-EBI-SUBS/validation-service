@@ -10,7 +10,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.model.Submittable;
@@ -32,9 +34,14 @@ public class ReferenceValidatorTest {
 
     static final String EXPECTED_ID = "foo";
 
+    Assay entityUnderValidation = new Assay();
+    DataType dataType = new DataType();
+
     @Before
     public void setup () {
+
         team = createTeam("TEAM_NAME");
+        entityUnderValidation.setId(EXPECTED_ID);
     }
 
     @Test
@@ -44,7 +51,9 @@ public class ReferenceValidatorTest {
         SampleRef sampleRef = new SampleRef();
         sampleRef.setAccession(sample.getAccession());
 
-        SingleValidationResult result = referenceValidator.validate(EXPECTED_ID,sampleRef, sample);
+        List<SingleValidationResult> results = referenceValidator.validate(entityUnderValidation,dataType,sampleRef, sample);
+
+        SingleValidationResult result = results.get(0);
 
         Assert.assertEquals(SingleValidationResultStatus.Pass, result.getValidationStatus());
         Assert.assertEquals(EXPECTED_ID, result.getEntityUuid());
@@ -58,7 +67,9 @@ public class ReferenceValidatorTest {
         sampleRef.setAlias(sample.getAlias());
         sampleRef.setTeam(team.getName());
 
-        SingleValidationResult result = referenceValidator.validate(EXPECTED_ID, sampleRef, sample);
+        List<SingleValidationResult> results = referenceValidator.validate(entityUnderValidation,dataType, sampleRef, sample);
+
+        SingleValidationResult result = results.get(0);
 
         Assert.assertEquals(SingleValidationResultStatus.Pass, result.getValidationStatus());
         Assert.assertEquals(EXPECTED_ID, result.getEntityUuid());
@@ -72,7 +83,10 @@ public class ReferenceValidatorTest {
 
         Submittable<Sample> nullSample = null;
 
-        SingleValidationResult result = referenceValidator.validate(EXPECTED_ID, sampleRef, nullSample);
+        List<SingleValidationResult> results = referenceValidator.validate(entityUnderValidation,dataType, sampleRef, nullSample);
+
+        SingleValidationResult result = results.get(0);
+
 
         Assert.assertEquals(SingleValidationResultStatus.Error, result.getValidationStatus());
     }
@@ -85,9 +99,9 @@ public class ReferenceValidatorTest {
 
         Submittable<Sample> nullSample = null;
 
-        SingleValidationResult result = referenceValidator.validate(EXPECTED_ID, sampleRef, nullSample);
+        List<SingleValidationResult> results = referenceValidator.validate(entityUnderValidation,dataType, sampleRef, nullSample);
 
-        Assert.assertEquals(SingleValidationResultStatus.Error, result.getValidationStatus());
+        Assert.assertEquals(SingleValidationResultStatus.Error, results.get(0).getValidationStatus());
     }
 
     @Test
@@ -106,7 +120,7 @@ public class ReferenceValidatorTest {
 
 
         List<SingleValidationResult> results = referenceValidator.validate(
-                EXPECTED_ID,
+                entityUnderValidation,dataType,
                 sampleRefList,
                 sampleList
         );

@@ -1,7 +1,10 @@
 package uk.ac.ebi.subs.validator.core.validators;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
@@ -17,13 +20,17 @@ import java.util.stream.Collectors;
 import static uk.ac.ebi.subs.validator.core.validators.ValidatorHelper.getDefaultSingleValidationResult;
 
 @Service
+@RequiredArgsConstructor
 public class ReferenceValidator {
     String FAIL_MESSAGE = "Could not find reference target: %s ";
     String FAIL_TEAM_AND_ALIAS_MESSAGE = "Could not find reference for ALIAS: %s in TEAM: %s ";
 
+    @NonNull
+    private ReferenceRequirementsValidator referenceRequirementsValidator;
 
     public List<SingleValidationResult> validate(
-            String idOfSubmittableBeingValidated,
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
+            DataType dataTypeOfEntityUnderValidation,
             Collection<? extends AbstractSubsRef> referencesToSubmittables,
             Collection<? extends Submittable> referencedSubmittables) {
 
@@ -49,27 +56,35 @@ public class ReferenceValidator {
                 submittable = sampleAliasMap.get(subsRef.getAlias() + subsRef.getTeam());
             }
 
-            results.add(validate(idOfSubmittableBeingValidated, subsRef, submittable));
+            results.addAll(validate(entityUnderValidation,dataTypeOfEntityUnderValidation, subsRef, submittable));
         }
 
         return results;
     }
 
     public List<SingleValidationResult> validate(
-            String idOfSubmittableBeingValidated,
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
+            DataType dataTypeOfEntityUnderValidation,
             AbstractSubsRef referenceToSubmittables,
             Collection<Submittable> referencedSubmittables) {
 
         return this.validate(
-                idOfSubmittableBeingValidated,
+                entityUnderValidation,
+                dataTypeOfEntityUnderValidation,
                 Arrays.asList(referenceToSubmittables),
                 referencedSubmittables
         );
     }
 
-    public SingleValidationResult validate(String idOfSubmittableBeingValidated, AbstractSubsRef referenceToSubmittable, Submittable referencedSubmittable) {
+    public List<SingleValidationResult> validate(
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
+            DataType dataTypeOfEntityUnderValidation,
+            AbstractSubsRef referenceToSubmittable,
+            Submittable referencedSubmittable) {
+
+
         SingleValidationResult singleValidationResult =
-                getDefaultSingleValidationResult(idOfSubmittableBeingValidated, ValidationAuthor.Core);
+                getDefaultSingleValidationResult(entityUnderValidation.getId(), ValidationAuthor.Core);
 
         if (referencedSubmittable == null) {
             if (referenceToSubmittable.getAccession() == null || referenceToSubmittable.getAccession().isEmpty()) {
@@ -79,10 +94,21 @@ public class ReferenceValidator {
             }
             singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
 
-        } else {
-            singleValidationResult.setValidationStatus(SingleValidationResultStatus.Pass);
+            return Arrays.asList(singleValidationResult);
         }
 
-        return singleValidationResult;
+        List<SingleValidationResult> results = referenceRequirementsValidator.validate(
+                entityUnderValidation,
+                dataTypeOfEntityUnderValidation,
+                referenceToSubmittable,
+                referencedSubmittable
+        );
+
+        if (results.isEmpty()) {
+            singleValidationResult.setValidationStatus(SingleValidationResultStatus.Pass);
+            return Arrays.asList(singleValidationResult);
+        } else {
+            return results;
+        }
     }
 }

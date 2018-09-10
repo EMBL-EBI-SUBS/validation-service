@@ -172,7 +172,7 @@ public class ReferenceRequirementsValidator {
 
         SubmittableRepository repo = null;
         Class submittableClass = submittable.getClass();
-        
+
         for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()){
             Class repositoryModelClass = entry.getKey();
 
