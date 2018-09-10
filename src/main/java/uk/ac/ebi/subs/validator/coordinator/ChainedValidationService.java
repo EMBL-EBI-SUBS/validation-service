@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -25,6 +27,7 @@ public class ChainedValidationService {
     public void triggerChainedValidation(Submittable triggerSubmittable, String submissionId) {
         streamSubmittablesInSubmissionExceptTriggerSubmittable(triggerSubmittable, submissionId)
                 .forEach(storedSubmittable -> submittableHandler.handleSubmittable(
+                        new HashSet<ValidationAuthor>(),
                         storedSubmittable,
                         submissionId,
                         (storedSubmittable.getDataType() == null) ? null : storedSubmittable.getDataType().getId(),

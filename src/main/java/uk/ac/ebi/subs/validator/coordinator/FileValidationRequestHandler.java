@@ -15,7 +15,10 @@ import uk.ac.ebi.subs.repository.repos.submittables.AnalysisRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
 import uk.ac.ebi.subs.validator.data.FileUploadValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,17 +71,17 @@ public class FileValidationRequestHandler {
         List<AssayData> assayDataList = assayDataRepository.findBySubmissionId(submissionId);
         assayDataList.forEach(assayData -> {
 
-                    // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
-                    // if yes, then make sure that the list of file references has not been changed
+            // TODO: karoly add later a check if that entity has been archived previously (proposed: ArchivedSubmittable)
+            // if yes, then make sure that the list of file references has not been changed
 
-                    submittableHandler.handleSubmittable(
-                            assayData,
-                            submissionId,
-                            (assayData.getDataType() == null) ? null : assayData.getDataType().getId(),
-                            (assayData.getChecklist() == null) ? null : assayData.getChecklist().getId()
-                    );
-                }
-        );
+            submittableHandler.handleSubmittable(
+                    new HashSet<>(Collections.singletonList(ValidationAuthor.FileReference)),
+                    assayData,
+                    submissionId,
+                    (assayData.getDataType() == null) ? null : assayData.getDataType().getId(),
+                    (assayData.getChecklist() == null) ? null : assayData.getChecklist().getId()
+            );
+        });
 
         List<Analysis> analysisList = analysisRepository.findBySubmissionId(submissionId);
         analysisList.forEach(analysis -> {
@@ -87,6 +90,7 @@ public class FileValidationRequestHandler {
             // if yes, then make sure that the list of file references has not been changed
 
             submittableHandler.handleSubmittable(
+                    new HashSet<>(Collections.singletonList(ValidationAuthor.FileReference)),
                     analysis,
                     submissionId,
                     (analysis.getDataType() == null) ? null : analysis.getDataType().getId(),
