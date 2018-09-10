@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.validator.coordinator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,7 +22,6 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
-import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 
 import java.util.ArrayList;
@@ -36,7 +34,6 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = {SampleRepository.class, AssayRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
-@Category(MongoDBDependentTest.class)
 @EnableAutoConfiguration
 @SpringBootTest(classes = AssayDataValidationMessageEnvelopeExpander.class)
 public class AssayDataValidationMessageEnvelopeExpanderTest {
@@ -68,12 +65,12 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
 
     @Before
     public void setup() {
-        team = MesssageEnvelopeTestHelper.createTeam();
-        submission = MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
+        team = MessageEnvelopeTestHelper.createTeam();
+        submission = MessageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
         savedAssay = createAndSaveAssay(submission,team);
         secondAssay = createAndSaveAssay(submission,team);
-        savedSample = MesssageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1).get(0);
-        savedProtocols = MesssageEnvelopeTestHelper.createAndSaveProtocols(protocolRepository,submission,team);
+        savedSample = MessageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1).get(0);
+        savedProtocols = MessageEnvelopeTestHelper.createAndSaveProtocols(protocolRepository,submission,team);
     }
 
     @After

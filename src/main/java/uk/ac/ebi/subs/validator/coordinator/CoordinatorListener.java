@@ -62,7 +62,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on project {}", project.getId());
 
-        if (!submittableHandler.handleSubmittable(project, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(project, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling project with id {}", project.getId());
         } else {
             logger.trace("Triggering chained validation from project {}", project.getId());
@@ -85,7 +86,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on sample with id {}", sample.getId());
 
-        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling sample with id {}", sample.getId());
         } else {
             logger.trace("Triggering chained validation from sample {}", sample.getId());
@@ -108,7 +110,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on study with id {}", study.getId());
 
-        if (!submittableHandler.handleSubmittable(study, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(study, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling study with id {}", study.getId());
         } else {
             logger.trace("Triggering chained validation from study {}", study.getId());
@@ -131,7 +134,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay {}", assay.getId());
 
-        if (!submittableHandler.handleSubmittable(assay, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(assay, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assay with id {}", assay.getId());
         } else {
             logger.trace("Triggering chained validation from assay {}", assay.getId());
@@ -154,7 +158,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on assay data {}", assayData.getId());
 
-        if (!submittableHandler.handleSubmittable(assayData, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(assayData, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling assayData with id {}", assayData.getId());
         } else {
             fileValidationRequestHandler.handleFilesWhenSubmittableChanged(envelope.getSubmissionId());
@@ -179,7 +184,8 @@ public class CoordinatorListener {
 
         logger.info("Received validation request on analysis {}", analysis.getId());
 
-        if (!submittableHandler.handleSubmittable(analysis, envelope.getSubmissionId(), envelope.getDataTypeId(), envelope.getChecklistId())) {
+        if (!submittableHandler.handleSubmittable(analysis, envelope.getSubmissionId(),
+                envelope.getDataTypeId(), envelope.getChecklistId())) {
             logger.error("Error handling analysis with id {}", analysis.getId());
         } else {
             fileValidationRequestHandler.handleFilesWhenSubmittableChanged(envelope.getSubmissionId());
@@ -207,9 +213,8 @@ public class CoordinatorListener {
         if (!fileValidationRequestHandler.handleFile(fileToValidate, envelope.getSubmissionId())) {
             logger.error("Error handling file to validate with id {}", fileToValidate.getId());
         }
-        if (!fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(envelope.getSubmissionId())) {
-            logger.error("Error handling submittables to validate their file references for submission (id: {})", envelope.getSubmissionId());
-        }
+        fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(envelope.getSubmissionId());
+        logger.trace("Handled submittables for file reference validation - a new file has been added.");
     }
 
     /**
@@ -221,9 +226,8 @@ public class CoordinatorListener {
     public void processFileDeletionRequest(FileDeletedMessage fileDeletedMessage) {
         String submissionID = fileDeletedMessage.getSubmissionId();
 
-        if (!fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(submissionID)) {
-            logger.error("Error handling file deletion for submission (id: {})", submissionID);
-        }
+        fileValidationRequestHandler.handleSubmittableForFileReferenceValidation(submissionID);
+        logger.trace("Handled submittables for file reference validation - a file has been deleted.");
     }
 
     /**
