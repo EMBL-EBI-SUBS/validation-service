@@ -15,9 +15,6 @@ import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -47,17 +44,15 @@ public class SubmittableHandler {
      * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Project} entity and
      * the UUID of the {@link ValidationResult}
      */
-    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId, String checklistId) {
+    protected boolean handleSubmittable(Submittable submittable, String submissionId, String dataTypeId,
+                                        String checklistId) {
         logger.trace("submittable {}; submissionId {}; dataTypeId {}",submittable,submissionId,dataTypeId);
 
-        Set<ValidationAuthor> validationAuthors;
+        Set<ValidationAuthor> validationAuthors = new HashSet<>();
 
-        if (dataTypeId == null) {
-            validationAuthors = Collections.emptySet();
-        }
-        else {
+        if (dataTypeId != null) {
             DataType dataType = dataTypeRepository.findOne(dataTypeId);
-            validationAuthors = validationAuthorsForDataType(dataType);
+            validationAuthors.addAll(validationAuthorsForDataType(dataType));
         }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);
@@ -83,10 +78,10 @@ public class SubmittableHandler {
         Set<ValidationAuthor> authors = new HashSet<>();
         
         if (dataType.getRequiredValidationAuthors() != null) {
-            authors.addAll(dataType.getRequiredValidationAuthors().stream().map(name -> ValidationAuthor.valueOf(name)).collect(Collectors.toList()));
+            authors.addAll(dataType.getRequiredValidationAuthors().stream().map(ValidationAuthor::valueOf).collect(Collectors.toList()));
         }
         if (dataType.getOptionalValidationAuthors() != null) {
-            authors.addAll(dataType.getOptionalValidationAuthors().stream().map(name -> ValidationAuthor.valueOf(name)).collect(Collectors.toList()));
+            authors.addAll(dataType.getOptionalValidationAuthors().stream().map(ValidationAuthor::valueOf).collect(Collectors.toList()));
         }
 
         return authors;
