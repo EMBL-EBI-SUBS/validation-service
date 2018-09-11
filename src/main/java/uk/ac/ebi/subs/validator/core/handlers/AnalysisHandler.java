@@ -13,6 +13,8 @@ import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Study;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
@@ -36,16 +38,20 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
     @NonNull
     private AttributeValidator attributeValidator;
 
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
+    
     @Override
     List<SingleValidationResult> validateSubmittable(AnalysisValidationEnvelope envelope) {
-        Analysis analysis = envelope.getEntityToValidate();
+        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+
 
         List<SingleValidationResult> results = Stream.of(
-                studyRefValidation(envelope),
-                sampleRefValidation(envelope),
-                assayRefValidation(envelope),
-                assayDataRefValidation(envelope),
-                analysisRefValidation(envelope)
+                studyRefValidation(envelope,dataType),
+                sampleRefValidation(envelope,dataType),
+                assayRefValidation(envelope,dataType),
+                assayDataRefValidation(envelope,dataType),
+                analysisRefValidation(envelope,dataType)
 
         )
                 .flatMap(l -> l.stream())
@@ -60,56 +66,61 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
         return ValidatorHelper.validateAttribute(analysis.getAttributes(), analysis.getId(), attributeValidator);
     }
 
-    List<SingleValidationResult> studyRefValidation(AnalysisValidationEnvelope envelope){
+    List<SingleValidationResult> studyRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
         List<StudyRef> refs = envelope.getEntityToValidate().getStudyRefs();
         List<Submittable<Study>> studies = envelope.getStudies();
 
         return refValidator.validate(
-                envelope.getEntityToValidate().getId(),
+                envelope.getEntityToValidate(),
+                dataType,
                 refs,
                 studies
         );
     }
 
-    List<SingleValidationResult> sampleRefValidation(AnalysisValidationEnvelope envelope){
+    List<SingleValidationResult> sampleRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
         List<StudyRef> refs = envelope.getEntityToValidate().getStudyRefs();
         List<Submittable<Study>> studies = envelope.getStudies();
 
         return refValidator.validate(
-                envelope.getEntityToValidate().getId(),
+                envelope.getEntityToValidate(),
+                dataType,
                 refs,
                 studies
         );
     }
 
-    List<SingleValidationResult> assayRefValidation(AnalysisValidationEnvelope envelope){
+    List<SingleValidationResult> assayRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
         List<AssayRef> refs = envelope.getEntityToValidate().getAssayRefs();
         List<Submittable<Assay>> assays = envelope.getAssays();
 
         return refValidator.validate(
-                envelope.getEntityToValidate().getId(),
+                envelope.getEntityToValidate(),
+                dataType,
                 refs,
                 assays
         );
     }
 
-    List<SingleValidationResult> assayDataRefValidation(AnalysisValidationEnvelope envelope){
+    List<SingleValidationResult> assayDataRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
         List<AssayDataRef> refs = envelope.getEntityToValidate().getAssayDataRefs();
         List<Submittable<AssayData>> assayData = envelope.getAssayData();
 
         return refValidator.validate(
-                envelope.getEntityToValidate().getId(),
+                envelope.getEntityToValidate(),
+                dataType,
                 refs,
                 assayData
         );
     }
 
-    List<SingleValidationResult> analysisRefValidation(AnalysisValidationEnvelope envelope){
+    List<SingleValidationResult> analysisRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
         List<AnalysisRef> refs = envelope.getEntityToValidate().getAnalysisRefs();
         List<Submittable<Analysis>> analyses = envelope.getAnalyses();
 
         return refValidator.validate(
-                envelope.getEntityToValidate().getId(),
+                envelope.getEntityToValidate(),
+                dataType,
                 refs,
                 analyses
         );
