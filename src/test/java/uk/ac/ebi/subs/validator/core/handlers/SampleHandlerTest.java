@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
@@ -39,6 +40,9 @@ public class SampleHandlerTest {
     @MockBean
     private AttributeValidator attributeValidator;
 
+    @MockBean
+    private DataTypeRepository dataTypeRepository;
+
     private final String sampleId = "sampleId";
     private final String validationResultId = "vrID";
     private final int validationVersion = 42;
@@ -46,20 +50,24 @@ public class SampleHandlerTest {
 
     private SampleValidationMessageEnvelope envelope;
 
+    private Sample sample; //entity to be validated
+
     private SampleRelationship sampleRelationship;
     private Submittable<Sample> wrappedSample;
-    private DataTypeRepository dataTypeRepository = Mockito.mock(DataTypeRepository.class);
+
+    private final String dataTypeId = "dataTypeId";
+    private DataType dataType;
 
     @Before
     public void buildUp() {
         //setup the handler
-        sampleHandler = new SampleHandler(referenceValidator, attributeValidator,dataTypeRepository);
+        sampleHandler = new SampleHandler(referenceValidator, attributeValidator, dataTypeRepository);
 
         //refs
         sampleRelationship = new SampleRelationship();
 
         //entity to be validated
-        Sample sample = new Sample();
+        sample = new Sample();
         sample.setId(sampleId);
         sample.setSampleRelationships(Arrays.asList(sampleRelationship));
 
@@ -68,12 +76,20 @@ public class SampleHandlerTest {
         String submissionId = "subID";
         wrappedSample = new Submittable<>(referencedSample, submissionId);
 
+        //dataType
+        dataType = new DataType();
+        dataType.setId(dataTypeId);
+
+        mockRepoCalls();
+
         //envelope
         envelope = new SampleValidationMessageEnvelope();
         envelope.setValidationResultUUID(validationResultId);
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(sample);
         envelope.setSampleList(Arrays.asList(wrappedSample));
+        envelope.setDataTypeId(dataTypeId);
+
     }
 
     @Test
@@ -108,7 +124,7 @@ public class SampleHandlerTest {
 
     @Test
     public void testHandler_bothFail() {
-        mockValidatorCalls(fail(sampleId, VALIDATION_AUTHOR_CORE),fail(sampleId, VALIDATION_AUTHOR_CORE));
+        mockValidatorCalls(fail(sampleId, VALIDATION_AUTHOR_CORE), fail(sampleId, VALIDATION_AUTHOR_CORE));
 
         SingleValidationResultsEnvelope resultsEnvelope = getValidationResultFromSubmittables(sampleHandler, envelope);
 
@@ -122,9 +138,18 @@ public class SampleHandlerTest {
         Assert.assertEquals(SingleValidationResultStatus.Error, actualResults.get(1).getValidationStatus());
     }
 
+    private void mockRepoCalls() {
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
+    }
+
     private void mockValidatorCalls(SingleValidationResult... sampleResults) {
         when(
-                referenceValidator.validate(sampleId, Arrays.asList(sampleRelationship), Arrays.asList(wrappedSample))
+                referenceValidator.validate(
+                        sample,
+                        dataType,
+                        Arrays.asList(sampleRelationship),
+                        Arrays.asList(wrappedSample))
         ).thenReturn(
                 Arrays.asList(sampleResults)
         );

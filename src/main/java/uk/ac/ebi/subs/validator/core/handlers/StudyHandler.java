@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,8 +45,11 @@ public class StudyHandler extends AbstractHandler<StudyValidationMessageEnvelope
 
         DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
 
-        List<SingleValidationResult> results =
-                referenceValidator.validate(study, dataType, study.getProjectRef(), envelope.getProject());
+        List<SingleValidationResult> results = new ArrayList<>();
+
+        results.addAll(
+                referenceValidator.validate(study, dataType, study.getProjectRef(), envelope.getProject())
+        );
 
         results.add(
                 studyTypeValidator.validate(study)

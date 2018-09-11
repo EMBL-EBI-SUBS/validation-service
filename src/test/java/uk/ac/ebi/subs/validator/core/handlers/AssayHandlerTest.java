@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -12,6 +13,8 @@ import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
@@ -45,10 +48,18 @@ public class AssayHandlerTest {
     private final int validationVersion = 42;
     private static final ValidationAuthor VALIDATION_AUTHOR_CORE = ValidationAuthor.Core;
 
+    @MockBean
+    private DataTypeRepository dataTypeRepository;
+
+    private final String dataTypeId = "dataTypeId";
+    private DataType dataType;
+
+
     private AssayValidationMessageEnvelope envelope;
 
     private StudyRef studyRef;
     private SampleRef sampleRef;
+    private Assay assay; //entity under validation
 
 
     private Submittable<Sample> wrappedSample;
@@ -59,7 +70,7 @@ public class AssayHandlerTest {
     public void buildUp() {
 
         //setup the handler
-        assayHandler = new AssayHandler(referenceValidator, attributeValidator);
+        assayHandler = new AssayHandler(referenceValidator, attributeValidator,dataTypeRepository);
 
         //refs
         studyRef = new StudyRef();
@@ -69,7 +80,7 @@ public class AssayHandlerTest {
         sampleUse.setSampleRef(sampleRef);
 
         //entity to be validated
-        Assay assay = new Assay();
+        assay = new Assay();
         assay.setId(assayId);
         assay.setStudyRef(studyRef);
         assay.setSampleUses(Arrays.asList(
@@ -83,6 +94,13 @@ public class AssayHandlerTest {
         Sample sample = new Sample();
         wrappedSample = new Submittable<>(sample, submissionId);
 
+        //dataType
+        dataType = new DataType();
+        dataType.setId(dataTypeId);
+
+        mockRepoCalls();
+
+
         //envelope
         envelope = new AssayValidationMessageEnvelope();
         envelope.setValidationResultUUID(validationResultId);
@@ -90,6 +108,7 @@ public class AssayHandlerTest {
         envelope.setEntityToValidate(assay);
         envelope.setStudy(wrappedStudy);
         envelope.setSampleList(Arrays.asList(wrappedSample));
+        envelope.setDataTypeId(dataTypeId);
     }
 
     @Test
@@ -149,15 +168,20 @@ public class AssayHandlerTest {
 
     private void mockRefValidatorCalls(SingleValidationResult studyResult, SingleValidationResult sampleresult) {
         when(
-                referenceValidator.validate(assayId, studyRef, wrappedStudy)
+                referenceValidator.validate(assay, dataType, studyRef, wrappedStudy)
         ).thenReturn(
-                studyResult
+                Arrays.asList(studyResult)
         );
 
         when(
-                referenceValidator.validate(assayId, Arrays.asList(sampleRef), Arrays.asList(wrappedSample))
+                referenceValidator.validate(assay, dataType, Arrays.asList(sampleRef), Arrays.asList(wrappedSample))
         ).thenReturn(
                 Arrays.asList(sampleresult)
         );
+    }
+
+    private void mockRepoCalls() {
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
     }
 }

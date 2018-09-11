@@ -177,6 +177,9 @@ public class ReferenceRequirementsValidatorTest {
         Assert.assertTrue(results.isEmpty());
 
         Mockito.verify(studyRepository).findOne(referencedEntity.getId());
+
+        Mockito.verify(validationResultRepository, Mockito.times(2))
+                .findOne(storedStudyWithPendingResults.getValidationResult().getUuid());
     }
 
     @Test
