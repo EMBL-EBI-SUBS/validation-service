@@ -4,12 +4,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.ProjectRef;
 import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Study;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.core.validators.StudyTypeValidator;
@@ -19,6 +22,7 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -53,11 +57,18 @@ public class StudyHandlerTest {
 
     private Study study;
 
+    @MockBean
+    private DataTypeRepository dataTypeRepository;
+
+    private final String dataTypeId = "dataTypeId";
+    private DataType dataType;
+
+
 
     @Before
     public void buildUp() {
         //setup the handler
-        studyHandler = new StudyHandler(studyTypeValidator, attributeValidator, referenceValidator);
+        studyHandler = new StudyHandler(studyTypeValidator, attributeValidator, referenceValidator, dataTypeRepository);
 
         //refs
         projectRef = new ProjectRef();
@@ -66,12 +77,18 @@ public class StudyHandlerTest {
         study = new Study();
         study.setId(studyId);
         study.setProjectRef(projectRef);
-        study.setStudyType(StudyDataType.Metabolomics_MS);
+        study.setStudyType(StudyDataType.Metabolomics_LCMS);
 
         //reference data for the envelope
         Project project = new Project();
         String submissionId = "subID";
         wrappedProject = new Submittable<>(project, submissionId);
+
+        //dataType
+        dataType = new DataType();
+        dataType.setId(dataTypeId);
+
+        mockRepoCalls();
 
         //envelope
         envelope = new StudyValidationMessageEnvelope();
@@ -79,6 +96,7 @@ public class StudyHandlerTest {
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(study);
         envelope.setProject(wrappedProject);
+        envelope.setDataTypeId(dataTypeId);
     }
 
     @Test
@@ -135,9 +153,9 @@ public class StudyHandlerTest {
 
     private void mockValidatorCalls(SingleValidationResult projectResult, SingleValidationResult studyTypeResult) {
         when(
-                referenceValidator.validate(studyId, projectRef, wrappedProject)
+                referenceValidator.validate(study,dataType, projectRef, wrappedProject)
         ).thenReturn(
-                projectResult
+                Arrays.asList(projectResult)
         );
 
         when(
@@ -145,5 +163,10 @@ public class StudyHandlerTest {
         ).thenReturn(
                 studyTypeResult
         );
+    }
+
+    private void mockRepoCalls() {
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
     }
 }

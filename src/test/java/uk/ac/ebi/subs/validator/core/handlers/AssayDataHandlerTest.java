@@ -4,11 +4,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
@@ -38,6 +41,13 @@ public class AssayDataHandlerTest {
     @MockBean
     private FileReferenceValidator fileReferenceValidator;
 
+    @MockBean
+    private DataTypeRepository dataTypeRepository;
+
+    private final String dataTypeId = "dataTypeId";
+    private DataType dataType;
+
+
     private final String assayDataId = "assayDataID";
     private final String validationResultId = "vrID";
     private final int validationVersion = 42;
@@ -48,17 +58,19 @@ public class AssayDataHandlerTest {
 
     private Submittable<Assay> wrappedAssay;
 
+    private AssayData assayData; //entity under validation
+
     @Before
     public void buildUp() {
 
         //setup the handler
-        assayDataHandler = new AssayDataHandler(referenceValidator, attributeValidator, fileReferenceValidator);
+        assayDataHandler = new AssayDataHandler(referenceValidator, attributeValidator, dataTypeRepository);
 
         //refs
         assayRef = new AssayRef();
 
         //entity to be validated
-        AssayData assayData = new AssayData();
+        assayData = new AssayData();
         assayData.setId(assayDataId);
         assayData.setAssayRefs(Arrays.asList(assayRef));
 
@@ -67,12 +79,19 @@ public class AssayDataHandlerTest {
         String submissionId = "subID";
         wrappedAssay = new Submittable<>(assay, submissionId);
 
+        //dataType
+        dataType = new DataType();
+        dataType.setId(dataTypeId);
+
+        mockRepoCalls();
+
         //envelope
         envelope = new AssayDataValidationMessageEnvelope();
         envelope.setValidationResultUUID(validationResultId);
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(assayData);
         envelope.getAssays().add(wrappedAssay);
+        envelope.setDataTypeId(dataTypeId);
     }
 
     private SingleValidationResult pass() {
@@ -141,9 +160,14 @@ public class AssayDataHandlerTest {
 
 
         when(
-                referenceValidator.validate(assayDataId, envelope.getEntityToValidate().getAssayRefs(), envelope.getAssays())
+                referenceValidator.validate(assayData, dataType, envelope.getEntityToValidate().getAssayRefs(), envelope.getAssays())
         ).thenReturn(
                 Arrays.asList(assayResult)
         );
+    }
+
+    private void mockRepoCalls() {
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
     }
 }

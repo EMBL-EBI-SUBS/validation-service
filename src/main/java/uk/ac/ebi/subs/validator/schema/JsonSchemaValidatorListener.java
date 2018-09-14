@@ -38,7 +38,7 @@ public class JsonSchemaValidatorListener {
     public void handleSampleValidationRequest(SampleValidationMessageEnvelope envelope) {
         logger.debug("Sample validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSampleValidation(envelope);
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);
     }
 
@@ -46,7 +46,7 @@ public class JsonSchemaValidatorListener {
     public void handleStudyValidationRequest(StudyValidationMessageEnvelope envelope) {
         logger.debug("Study validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleStudyValidation(envelope);
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);
     }
 
@@ -54,7 +54,7 @@ public class JsonSchemaValidatorListener {
     public void handleAssayValidationRequest(AssayValidationMessageEnvelope envelope) {
         logger.debug("Assay validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleAssayValidation(envelope);
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);
     }
 
@@ -62,7 +62,7 @@ public class JsonSchemaValidatorListener {
     public void handleAssayDataValidationRequest(AssayDataValidationMessageEnvelope envelope) {
         logger.debug("AssayData validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleAssayDataValidation(envelope);
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);
     }
 
@@ -70,7 +70,7 @@ public class JsonSchemaValidatorListener {
     public void handleAnalysisValidationRequest(AnalysisValidationEnvelope envelope) {
         logger.debug("Analysis validation request received with ID: {}.", envelope.getEntityToValidate().getId());
 
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleAnalysisValidation(envelope);
+        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);
     }
 

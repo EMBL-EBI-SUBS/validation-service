@@ -24,7 +24,13 @@ public class ChainedValidationService {
 
     public void triggerChainedValidation(Submittable triggerSubmittable, String submissionId) {
         streamSubmittablesInSubmissionExceptTriggerSubmittable(triggerSubmittable, submissionId)
-                .forEach(storedSubmittable -> submittableHandler.handleSubmittable(storedSubmittable, submissionId));
+                .forEach(storedSubmittable -> submittableHandler.handleSubmittable(
+                        storedSubmittable,
+                        submissionId,
+                        (storedSubmittable.getDataType() == null) ? null : storedSubmittable.getDataType().getId(),
+                        (storedSubmittable.getChecklist() == null) ? null : storedSubmittable.getChecklist().getId()
+                        )
+                );
     }
 
     protected Stream<? extends StoredSubmittable> streamSubmittablesInSubmissionExceptTriggerSubmittable(Submittable triggerSubmittable, String submissionId) {
@@ -41,7 +47,7 @@ public class ChainedValidationService {
     protected Stream<? extends StoredSubmittable> streamSubmittablesInSubmission(String submissionId) {
         return submittableRepositoryMap.entrySet().stream()
                 .map(entry -> entry.getValue())
-                .flatMap( submittableRepository -> submittableRepository.streamBySubmissionId(submissionId));
+                .flatMap(submittableRepository -> submittableRepository.streamBySubmissionId(submissionId));
     }
 
 }

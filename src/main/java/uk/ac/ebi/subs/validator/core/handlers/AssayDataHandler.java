@@ -4,13 +4,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
 import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
-import uk.ac.ebi.subs.validator.filereference.FileReferenceValidator;
 
 import java.util.List;
 
@@ -28,29 +28,29 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     private ReferenceValidator refValidator;
     @NonNull
     private AttributeValidator attributeValidator;
+
     @NonNull
-    private FileReferenceValidator fileReferenceValidator;
+    private DataTypeRepository dataTypeRepository;
 
     @Override
     List<SingleValidationResult> validateSubmittable(AssayDataValidationMessageEnvelope envelope) {
-        AssayData assayData = getAssayDataFromEnvelope(envelope);
+        AssayData assayData = envelope.getEntityToValidate();
+
+        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+
 
         return refValidator.validate(
-                assayData.getId(),
+                assayData,
+                dataType,
                 assayData.getAssayRefs(),
                 envelope.getAssays()
         );
     }
 
     @Override
-    List<SingleValidationResult> validateAttributes(ValidationMessageEnvelope envelope) {
-        AssayData assayData = getAssayDataFromEnvelope(envelope);
-
+    List<SingleValidationResult> validateAttributes(AssayDataValidationMessageEnvelope envelope) {
+        AssayData assayData = envelope.getEntityToValidate();
         return ValidatorHelper.validateAttribute(assayData.getAttributes(), assayData.getId(), attributeValidator);
-    }
-
-    private AssayData getAssayDataFromEnvelope(ValidationMessageEnvelope envelope) {
-        return (AssayData) envelope.getEntityToValidate();
     }
 
 }

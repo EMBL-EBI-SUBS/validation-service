@@ -11,8 +11,6 @@ and the java representation of the request body to be sent to the validation ser
 The schema validator throws specific exceptions for unexpected errors:
 
 - `JsonSchemaValidatorException` for any error when reaching the *json-schema-validator* server.
-- `SchemaNotFoundException` when it can't find the schema to send for validation on the *json-schema-validator* server.
 
 ## Schemas
-The schema validator does not hold the schemas used for the validation, these are available on the
-validation schemas [repository](https://github.com/EMBL-EBI-SUBS/validation-schemas).
+The schema validator does not hold the schemas used for the validation, these come from the DataType and Checklist objects

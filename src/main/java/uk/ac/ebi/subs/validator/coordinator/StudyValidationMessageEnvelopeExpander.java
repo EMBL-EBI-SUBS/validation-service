@@ -44,7 +44,7 @@ public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnv
         }
 
         List<ProtocolRef> protocolRefs = validationMessageEnvelope.getEntityToValidate().getProtocolRefs();
-        List<Protocol> protocols = new ArrayList<>();
+        List<Submittable<Protocol>> protocols = new ArrayList<>();
 
         for(ProtocolRef protocolRef :protocolRefs){
             Protocol protocol;
@@ -53,7 +53,7 @@ public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnv
             } else {
                 protocol = protocolRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(protocolRef.getTeam(), protocolRef.getAlias());
             }
-            protocols.add(protocol);
+            protocols.add(new Submittable<>(protocol, project == null ? null : project.getSubmission().getId()));
         }
         validationMessageEnvelope.setProtocols(protocols);
 

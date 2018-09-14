@@ -28,7 +28,7 @@ public class StudyTypeValidatorTest {
 
     @Test
     public void studyTypePresentSoPass() {
-        study.setStudyType(StudyDataType.Metabolomics_MS);
+        study.setStudyType(StudyDataType.Metabolomics_LCMS);
 
         SingleValidationResult result = studyTypeValidator.validate(study);
 

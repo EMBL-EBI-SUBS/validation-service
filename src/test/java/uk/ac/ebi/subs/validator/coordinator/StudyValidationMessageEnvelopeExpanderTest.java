@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.validator.coordinator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,7 +18,6 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
-import uk.ac.ebi.subs.validator.config.MongoDBDependentTest;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 
 import java.util.List;
@@ -32,7 +30,6 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
-@Category(MongoDBDependentTest.class)
 @EnableAutoConfiguration
 @SpringBootTest(classes = StudyValidationMessageEnvelopeExpander.class)
 public class StudyValidationMessageEnvelopeExpanderTest {
@@ -59,8 +56,8 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     @Before
     public void setup() {
-        team = MesssageEnvelopeTestHelper.createTeam();
-        submission= MesssageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository,submissionRepository,team);
+        team = MessageEnvelopeTestHelper.createTeam();
+        submission= MessageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository,submissionRepository,team);
         savedProject = createAndSaveProject(submission,team);
         savedProtocols = createAndSaveProtocols(team);
     }
@@ -70,6 +67,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
         projectRepository.delete(savedProject);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
+        protocolRepository.delete(savedProtocols);
     }
 
     @Test
@@ -98,7 +96,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeWithProtocols() throws Exception {
         StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope();
-        studyValidationMessageEnvelope.getEntityToValidate().setProtocolRefs(MesssageEnvelopeTestHelper.createProtocolRefs(savedProtocols));
+        studyValidationMessageEnvelope.getEntityToValidate().setProtocolRefs(MessageEnvelopeTestHelper.createProtocolRefs(savedProtocols));
         studyValidationMessageEnvelopeExpander.expandEnvelope(studyValidationMessageEnvelope);
         assertEquals(savedProtocols.size(),studyValidationMessageEnvelope.getProtocols().size());
         assertThat(savedProtocols.get(0).getAlias(),is(studyValidationMessageEnvelope.getProtocols().get(0).getAlias()));
@@ -127,7 +125,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
 
     private List<Protocol> createAndSaveProtocols(Team team) {
-        List<Protocol> protocols = MesssageEnvelopeTestHelper.createProtocols(team, 3);
+        List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
         return protocolRepository.save(protocols);
     }
 

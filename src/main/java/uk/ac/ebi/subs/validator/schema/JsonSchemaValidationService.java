@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.validator.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Data
 public class JsonSchemaValidationService {
     private static final Logger logger = LoggerFactory.getLogger(JsonSchemaValidationService.class);
 
