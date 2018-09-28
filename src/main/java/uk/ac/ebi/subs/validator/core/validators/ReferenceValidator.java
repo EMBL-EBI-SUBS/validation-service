@@ -2,6 +2,8 @@ package uk.ac.ebi.subs.validator.core.validators;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -9,6 +11,7 @@ import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.model.Submittable;
+import uk.ac.ebi.subs.validator.schema.JsonSchemaValidatorListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +30,7 @@ public class ReferenceValidator {
 
     @NonNull
     private ReferenceRequirementsValidator referenceRequirementsValidator;
+
 
     public List<SingleValidationResult> validate(
             uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
