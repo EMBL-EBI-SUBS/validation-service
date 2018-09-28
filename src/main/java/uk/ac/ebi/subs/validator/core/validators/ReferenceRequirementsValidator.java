@@ -2,14 +2,15 @@ package uk.ac.ebi.subs.validator.core.validators;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
-import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -29,6 +30,11 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class ReferenceRequirementsValidator {
+
+    @Setter
+    private long maximumTimeToWaitInMillis = 2 * 60 * 1000; //minutes requried * seconds in minute * millis in second
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @NonNull
     private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
@@ -91,10 +97,14 @@ public class ReferenceRequirementsValidator {
                 .map(ValidationAuthor::valueOf)
                 .collect(Collectors.toSet());
 
+
         if (requiredValidationAuthors != null && !requiredValidationAuthors.isEmpty()) {
             ValidationResult validationResult = pair.getSecond();
 
-            while (waitingForResults(validationResult, requiredValidationAuthors)) {
+
+            long timeToGiveupWaitingForResults = System.currentTimeMillis() + this.maximumTimeToWaitInMillis;
+
+            while (waitingForResults(validationResult, requiredValidationAuthors, timeToGiveupWaitingForResults)) {
                 sleep();
                 validationResult = validationResultRepository.findOne(validationResult.getUuid());
             }
@@ -154,17 +164,27 @@ public class ReferenceRequirementsValidator {
         }
     }
 
-    private boolean waitingForResults(ValidationResult validationResult, Collection<ValidationAuthor> requiredValidationAuthors) {
+    private boolean waitingForResults(ValidationResult validationResult, Collection<ValidationAuthor> requiredValidationAuthors, long timeToGiveupWaitingForResults) {
         Map<ValidationAuthor, List<SingleValidationResult>> results = validationResult.getExpectedResults();
+
+        boolean stillWaiting = false;
 
         for (ValidationAuthor author : requiredValidationAuthors) {
             List<SingleValidationResult> authorResults = results.get(author);
             if (authorResults == null || authorResults.isEmpty()) {
-                return true; //no results = still waiting
+                stillWaiting = true; //no results = still waiting
             }
         }
 
-        return false;
+        long timeNow = System.currentTimeMillis();
+
+
+        if (stillWaiting && timeNow > timeToGiveupWaitingForResults) {
+            String msg = String.join(" ", "Gave up waiting for validation results", validationResult.toString(), requiredValidationAuthors.toString(), "" + timeToGiveupWaitingForResults, "" + timeNow);
+            throw new RuntimeException(msg);
+        }
+
+        return stillWaiting;
 
     }
 
@@ -174,13 +194,13 @@ public class ReferenceRequirementsValidator {
         Class submittableClass = submittable.getClass();
 
         if (submittable instanceof uk.ac.ebi.subs.validator.model.Submittable) {
-            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable)submittable).getBaseSubmittable().getClass();
+            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable) submittable).getBaseSubmittable().getClass();
         }
 
-        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()){
+        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
             Class repositoryModelClass = entry.getKey();
 
-            if (submittableClass.isAssignableFrom(repositoryModelClass)){
+            if (submittableClass.isAssignableFrom(repositoryModelClass)) {
                 repo = entry.getValue();
             }
         }

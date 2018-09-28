@@ -88,7 +88,7 @@ public class ReferenceRequirementsValidatorTest {
 
         //finally, an actual validator
         this.validator = new ReferenceRequirementsValidator(repositoryMap,validationResultRepository);
-
+        this.validator.setMaximumTimeToWaitInMillis(3000); // make it give up quickly, or the tests will take too long
 
     }
 
@@ -203,6 +203,39 @@ public class ReferenceRequirementsValidatorTest {
 
         Mockito.verify(studyRepository).findOne(referencedEntity.getId());
     }
+
+    @Test(expected = RuntimeException.class)
+    /**
+     * referenced entity does not immediatly have validation results for the relevant author, but it should pass eventually
+     */
+    public void validator_errors_if_pending_for_too_long() {
+        String dataTypeId = expectedDataTypeOfReferencedEntity;
+        Collection<ValidationAuthor> authors = Arrays.asList(ValidationAuthor.Ena);
+
+        uk.ac.ebi.subs.repository.model.Study storedStudyWithPendingResults = buildStoredStudy(
+                referencedEntity.getId(),
+                dataTypeId,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                authors //pending
+        );
+
+
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
+                .thenReturn(
+                        storedStudyWithPendingResults
+                )
+        ;
+
+        Mockito.when(validationResultRepository.findOne(storedStudyWithPendingResults.getValidationResult().getUuid()))
+                .thenReturn(
+                        storedStudyWithPendingResults.getValidationResult()
+                );
+
+
+        List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
+    }
+
 
     private uk.ac.ebi.subs.repository.model.Study buildStoredStudy(String id, String dataTypeId, Collection<ValidationAuthor> passingAuthors, Collection<ValidationAuthor> failingAuthors, Collection<ValidationAuthor> pendingAuthors) {
         uk.ac.ebi.subs.repository.model.Study storedStudy = new uk.ac.ebi.subs.repository.model.Study();
