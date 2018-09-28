@@ -8,11 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
-import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -100,7 +98,6 @@ public class ReferenceRequirementsValidator {
                 .collect(Collectors.toSet());
 
 
-
         if (requiredValidationAuthors != null && !requiredValidationAuthors.isEmpty()) {
             ValidationResult validationResult = pair.getSecond();
 
@@ -182,8 +179,8 @@ public class ReferenceRequirementsValidator {
         long timeNow = System.currentTimeMillis();
 
 
-        if (stillWaiting && timeNow > timeToGiveupWaitingForResults){
-            String msg = String.join(" ","Gave up waiting for validation results",validationResult.toString(),requiredValidationAuthors.toString(),""+timeToGiveupWaitingForResults,""+timeNow);
+        if (stillWaiting && timeNow > timeToGiveupWaitingForResults) {
+            String msg = String.join(" ", "Gave up waiting for validation results", validationResult.toString(), requiredValidationAuthors.toString(), "" + timeToGiveupWaitingForResults, "" + timeNow);
             throw new RuntimeException(msg);
         }
 
@@ -197,13 +194,13 @@ public class ReferenceRequirementsValidator {
         Class submittableClass = submittable.getClass();
 
         if (submittable instanceof uk.ac.ebi.subs.validator.model.Submittable) {
-            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable)submittable).getBaseSubmittable().getClass();
+            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable) submittable).getBaseSubmittable().getClass();
         }
 
-        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()){
+        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
             Class repositoryModelClass = entry.getKey();
 
-            if (submittableClass.isAssignableFrom(repositoryModelClass)){
+            if (submittableClass.isAssignableFrom(repositoryModelClass)) {
                 repo = entry.getValue();
             }
         }
