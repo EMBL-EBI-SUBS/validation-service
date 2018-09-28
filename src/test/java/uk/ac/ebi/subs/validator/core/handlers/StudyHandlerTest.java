@@ -4,18 +4,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.ProjectRef;
-import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
-import uk.ac.ebi.subs.validator.core.validators.StudyTypeValidator;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
@@ -42,9 +39,6 @@ public class StudyHandlerTest {
     @MockBean
     private AttributeValidator attributeValidator;
 
-    @MockBean
-    private StudyTypeValidator studyTypeValidator;
-
     private final String studyId = "studyId";
     private final String validationResultId = "vrID";
     private final int validationVersion = 42;
@@ -64,11 +58,10 @@ public class StudyHandlerTest {
     private DataType dataType;
 
 
-
     @Before
     public void buildUp() {
         //setup the handler
-        studyHandler = new StudyHandler(studyTypeValidator, attributeValidator, referenceValidator, dataTypeRepository);
+        studyHandler = new StudyHandler(attributeValidator, referenceValidator, dataTypeRepository);
 
         //refs
         projectRef = new ProjectRef();
@@ -77,7 +70,6 @@ public class StudyHandlerTest {
         study = new Study();
         study.setId(studyId);
         study.setProjectRef(projectRef);
-        study.setStudyType(StudyDataType.Metabolomics_LCMS);
 
         //reference data for the envelope
         Project project = new Project();
@@ -125,44 +117,25 @@ public class StudyHandlerTest {
     }
 
     @Test
-    public void testHandler_studyTypeFails() {
-        mockValidatorCalls(pass(studyId, VALIDATION_AUTHOR_CORE), fail(studyId, VALIDATION_AUTHOR_CORE));
-
-        List<SingleValidationResult> actualResults =
-                commonTestMethodForEntities(getValidationResultFromSubmittables(studyHandler, envelope),
-                        envelope, validationResultId, validationVersion, studyId, VALIDATION_AUTHOR_CORE);
-
-        //there should be one result (even though the handler received two passes) and it should be a pass
-        Assert.assertEquals(1, actualResults.size());
-        Assert.assertEquals(SingleValidationResultStatus.Error, actualResults.get(0).getValidationStatus());
-    }
-
-    @Test
-    public void testHandler_bothFail() {
+    public void testHandler_fails() {
         mockValidatorCalls(fail(studyId, VALIDATION_AUTHOR_CORE), fail(studyId, VALIDATION_AUTHOR_CORE));
 
         List<SingleValidationResult> actualResults =
                 commonTestMethodForEntities(getValidationResultFromSubmittables(studyHandler, envelope),
                         envelope, validationResultId, validationVersion, studyId, VALIDATION_AUTHOR_CORE);
 
-        //there should be one result (even though the handler received two passes) and it should be a pass
-        Assert.assertEquals(2, actualResults.size());
+        Assert.assertEquals(1, actualResults.size());
         Assert.assertEquals(SingleValidationResultStatus.Error, actualResults.get(0).getValidationStatus());
-        Assert.assertEquals(SingleValidationResultStatus.Error, actualResults.get(1).getValidationStatus());
     }
 
     private void mockValidatorCalls(SingleValidationResult projectResult, SingleValidationResult studyTypeResult) {
         when(
-                referenceValidator.validate(study,dataType, projectRef, wrappedProject)
+                referenceValidator.validate(study, dataType, projectRef, wrappedProject)
         ).thenReturn(
                 Arrays.asList(projectResult)
         );
 
-        when(
-                studyTypeValidator.validate(study)
-        ).thenReturn(
-                studyTypeResult
-        );
+
     }
 
     private void mockRepoCalls() {
