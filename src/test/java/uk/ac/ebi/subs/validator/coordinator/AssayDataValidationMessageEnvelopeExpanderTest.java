@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +34,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, AssayRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
+@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, AssayRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
 @EnableAutoConfiguration
 @SpringBootTest(classes = AssayDataValidationMessageEnvelopeExpander.class)
 public class AssayDataValidationMessageEnvelopeExpanderTest {

@@ -28,6 +28,7 @@ public class ReferenceValidator {
     @NonNull
     private ReferenceRequirementsValidator referenceRequirementsValidator;
 
+
     public List<SingleValidationResult> validate(
             uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
             DataType dataTypeOfEntityUnderValidation,
@@ -56,7 +57,7 @@ public class ReferenceValidator {
                 submittable = sampleAliasMap.get(subsRef.getAlias() + subsRef.getTeam());
             }
 
-            results.addAll(validate(entityUnderValidation,dataTypeOfEntityUnderValidation, subsRef, submittable));
+            results.addAll(validate(entityUnderValidation, dataTypeOfEntityUnderValidation, subsRef, submittable));
         }
 
         return results;

@@ -137,7 +137,6 @@ public class MessageEnvelopeTestHelper {
         study.setAlias(projectAlias);
         study.setAccession(projectAccession);
         study.setSubmission(submission);
-        study.setStudyType(StudyDataType.Metabolomics_LCMS);
         return study;
     }
 
@@ -202,7 +201,6 @@ public class MessageEnvelopeTestHelper {
         study.setAttributes(generateUsiAttributes());
         study.setTitle("Test study");
         study.setDescription("Mock study to test validation");
-        study.setStudyType(StudyDataType.Metabolomics_LCMS);
         return study;
     }
 

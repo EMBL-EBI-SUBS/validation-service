@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class})
+@EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
 @EnableAutoConfiguration
 @SpringBootTest(classes = StudyValidationMessageEnvelopeExpander.class)
 public class StudyValidationMessageEnvelopeExpanderTest {
