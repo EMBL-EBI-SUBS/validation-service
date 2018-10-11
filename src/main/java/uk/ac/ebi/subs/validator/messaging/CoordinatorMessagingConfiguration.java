@@ -255,7 +255,7 @@ public class CoordinatorMessagingConfiguration {
     }
 
     @Bean
-    Queue submissionEgaDatasetValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_EGA_DAC_VALIDATOR);}
+    Queue submissionEgaDatasetValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_EGA_DATASET_VALIDATOR);}
 
     @Bean
     Binding validationForCreatedEgaDatasetSubmissionBinding(Queue submissionEgaDatasetValidatorQueue, TopicExchange submissionExchange) {
