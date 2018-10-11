@@ -64,4 +64,35 @@ public class MessagingConfiguration {
     public Binding coreAnalysisValidationBinding(Queue coreAnalysisValidationQueue, TopicExchange submissionExchange) {
         return BindingBuilder.bind(coreAnalysisValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_ANALYSIS_VALIDATION);
     }
+
+    @Bean
+    public Queue coreSampleGroupValidationQueue() {
+        return buildQueueWithDlx(Queues.CORE_SAMPLE_GROUP_VALIDATION);
+    }
+
+    @Bean
+    public Binding coreSampleGroupValidationBinding(Queue coreSampleGroupValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(coreSampleGroupValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_SAMPLE_GROUP_VALIDATION);
+    }
+
+    @Bean
+    public Queue coreEgaDatasetValidationQueue() {
+        return buildQueueWithDlx(Queues.CORE_EGA_DATASET_VALIDATION);
+    }
+
+    @Bean
+    public Binding coreEgaDatasetValidationBinding(Queue coreEgaDatasetValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(coreEgaDatasetValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_EGA_DATASET_VALIDATION);
+    }
+
+    @Bean
+    public Queue coreEgaDacPolicyValidationQueue() {
+        return buildQueueWithDlx(Queues.CORE_EGA_DAC_POLICY_VALIDATION);
+    }
+
+    @Bean
+    public Binding coreEgaDacPolicyValidationBinding(Queue coreEgaDacPolicyValidationQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(coreEgaDacPolicyValidationQueue).to(submissionExchange).with(RoutingKeys.EVENT_CORE_EGA_DAC_POLICY_VALIDATION);
+    }
+
 }

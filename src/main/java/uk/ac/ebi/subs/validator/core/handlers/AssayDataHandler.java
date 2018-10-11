@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.validator.core.handlers;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     @NonNull
     private ReferenceValidator refValidator;
     @NonNull
+    @Getter
     private AttributeValidator attributeValidator;
 
     @NonNull
@@ -45,12 +47,6 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
                 assayData.getAssayRefs(),
                 envelope.getAssays()
         );
-    }
-
-    @Override
-    List<SingleValidationResult> validateAttributes(AssayDataValidationMessageEnvelope envelope) {
-        AssayData assayData = envelope.getEntityToValidate();
-        return ValidatorHelper.validateAttribute(assayData.getAttributes(), assayData.getId(), attributeValidator);
     }
 
 }
