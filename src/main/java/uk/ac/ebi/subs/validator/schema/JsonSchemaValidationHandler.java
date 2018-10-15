@@ -20,6 +20,7 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
+import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -64,8 +65,7 @@ public class JsonSchemaValidationHandler {
         return map;
     }
 
-    public SingleValidationResultsEnvelope handleSubmittableValidation(ValidationMessageEnvelope envelope) {
-        Submittable submittable = envelope.getEntityToValidate();
+    public SingleValidationResultsEnvelope handleSubmittableValidation(SchemaValidationMessageEnvelope envelope) {
 
         DataType dataType = null;
         Checklist checklist = null;
@@ -79,7 +79,7 @@ public class JsonSchemaValidationHandler {
 
         List<JsonSchemaValidationError> errors = new ArrayList<>();
 
-        JsonNode documentToValidate = mapper.valueToTree(submittable);
+        JsonNode documentToValidate = envelope.getEntityToValidate();
 
         if (dataType != null && dataType.getValidationSchema() != null) {
             JsonNode schema = fixStoredJson(dataType.getValidationSchema());
@@ -103,12 +103,12 @@ public class JsonSchemaValidationHandler {
     }
 
     // -- Helper methods -- //
-    private List<SingleValidationResult> getSingleValidationResults(ValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
+    private List<SingleValidationResult> getSingleValidationResults(SchemaValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
         List<SingleValidationResult> singleValidationResultList;
         if (jsonSchemaValidationErrors.isEmpty()) {
-            singleValidationResultList = Arrays.asList(generatePassingSingleValidationResult(envelope.getEntityToValidate().getId(), ValidationAuthor.JsonSchema));
+            singleValidationResultList = Arrays.asList(generatePassingSingleValidationResult(envelope.entityId(), ValidationAuthor.JsonSchema));
         } else {
-            singleValidationResultList = convertToSingleValidationResultList(jsonSchemaValidationErrors, envelope.getEntityToValidate().getId());
+            singleValidationResultList = convertToSingleValidationResultList(jsonSchemaValidationErrors, envelope.entityId());
         }
         return singleValidationResultList;
     }

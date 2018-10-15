@@ -10,25 +10,42 @@ import uk.ac.ebi.subs.data.fileupload.File;
 import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.data.submittable.BaseSubmittable;
+import uk.ac.ebi.subs.data.submittable.EgaDac;
+import uk.ac.ebi.subs.data.submittable.EgaDacPolicy;
+import uk.ac.ebi.subs.data.submittable.EgaDataset;
 import uk.ac.ebi.subs.data.submittable.Project;
+import uk.ac.ebi.subs.data.submittable.Protocol;
 import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.data.submittable.SampleGroup;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.validator.coordinator.messages.FileDeletedMessage;
 import uk.ac.ebi.subs.validator.coordinator.messages.StoredSubmittableDeleteMessage;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.AssayValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.EgaDacPolicyValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.EgaDacValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.EgaDatasetValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.FileUploadValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.ProjectValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.ProtocolValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.SampleGroupValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.SampleValidationEnvelopeToCoordinator;
 import uk.ac.ebi.subs.validator.data.StudyValidationEnvelopeToCoordinator;
+import uk.ac.ebi.subs.validator.data.ValidationEnvelopeToCoordinator;
 
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.FILE_DELETION_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.FILE_REF_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_ANALYSIS_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_ASSAY_DATA_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_ASSAY_VALIDATOR;
+import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_EGA_DAC_POLICY_VALIDATOR;
+import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_EGA_DAC_VALIDATOR;
+import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_EGA_DATASET_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_PROJECT_VALIDATOR;
+import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_PROTOCOL_VALIDATOR;
+import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_SAMPLE_GROUP_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_SAMPLE_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_STUDY_VALIDATOR;
 import static uk.ac.ebi.subs.validator.messaging.CoordinatorQueues.SUBMISSION_SUBMITTABLE_DELETED;
@@ -53,22 +70,7 @@ public class CoordinatorListener {
      */
     @RabbitListener(queues = SUBMISSION_PROJECT_VALIDATOR)
     public void processProjectSubmission(ProjectValidationEnvelopeToCoordinator envelope) {
-        Project project = envelope.getEntityToValidate();
-
-
-        if (project == null) {
-            throw new IllegalArgumentException("The envelope should contain a project.");
-        }
-
-        logger.info("Received validation request on project {}", project.getId());
-
-        if (!submittableHandler.handleSubmittable(project, envelope.getSubmissionId(),
-                envelope.getDataTypeId(), envelope.getChecklistId())) {
-            logger.error("Error handling project with id {}", project.getId());
-        } else {
-            logger.trace("Triggering chained validation from project {}", project.getId());
-            chainedValidationService.triggerChainedValidation(project, envelope.getSubmissionId());
-        }
+        basicSubmittableValidationProcessing(envelope, Project.class);
     }
 
     /**
@@ -78,21 +80,7 @@ public class CoordinatorListener {
      */
     @RabbitListener(queues = SUBMISSION_SAMPLE_VALIDATOR)
     public void processSampleSubmission(SampleValidationEnvelopeToCoordinator envelope) {
-        Sample sample = envelope.getEntityToValidate();
-
-        if (sample == null) {
-            throw new IllegalArgumentException("The envelope should contain a sample.");
-        }
-
-        logger.info("Received validation request on sample with id {}", sample.getId());
-
-        if (!submittableHandler.handleSubmittable(sample, envelope.getSubmissionId(),
-                envelope.getDataTypeId(), envelope.getChecklistId())) {
-            logger.error("Error handling sample with id {}", sample.getId());
-        } else {
-            logger.trace("Triggering chained validation from sample {}", sample.getId());
-            chainedValidationService.triggerChainedValidation(sample, envelope.getSubmissionId());
-        }
+        basicSubmittableValidationProcessing(envelope, Sample.class);
     }
 
     /**
@@ -102,21 +90,7 @@ public class CoordinatorListener {
      */
     @RabbitListener(queues = SUBMISSION_STUDY_VALIDATOR)
     public void processStudySubmission(StudyValidationEnvelopeToCoordinator envelope) {
-        Study study = envelope.getEntityToValidate();
-
-        if (study == null) {
-            throw new IllegalArgumentException("The envelope should contain a study.");
-        }
-
-        logger.info("Received validation request on study with id {}", study.getId());
-
-        if (!submittableHandler.handleSubmittable(study, envelope.getSubmissionId(),
-                envelope.getDataTypeId(), envelope.getChecklistId())) {
-            logger.error("Error handling study with id {}", study.getId());
-        } else {
-            logger.trace("Triggering chained validation from study {}", study.getId());
-            chainedValidationService.triggerChainedValidation(study, envelope.getSubmissionId());
-        }
+        basicSubmittableValidationProcessing(envelope, Study.class);
     }
 
     /**
@@ -126,20 +100,50 @@ public class CoordinatorListener {
      */
     @RabbitListener(queues = SUBMISSION_ASSAY_VALIDATOR)
     public void processAssaySubmission(AssayValidationEnvelopeToCoordinator envelope) {
-        Assay assay = envelope.getEntityToValidate();
+        basicSubmittableValidationProcessing(envelope, Assay.class);
+    }
 
-        if (assay == null) {
-            throw new IllegalArgumentException("The envelope should contain an assay.");
+    @RabbitListener(queues = SUBMISSION_SAMPLE_GROUP_VALIDATOR)
+    public void processSampleGroupSubmission(SampleGroupValidationEnvelopeToCoordinator envelope) {
+        basicSubmittableValidationProcessing(envelope, SampleGroup.class);
+    }
+
+    @RabbitListener(queues = SUBMISSION_PROTOCOL_VALIDATOR)
+    public void processProtocolSubmission(ProtocolValidationEnvelopeToCoordinator envelope) {
+        basicSubmittableValidationProcessing(envelope, Protocol.class);
+    }
+
+    @RabbitListener(queues = SUBMISSION_EGA_DAC_VALIDATOR)
+    public void processEgaDacSubmission(EgaDacValidationEnvelopeToCoordinator envelope) {
+        basicSubmittableValidationProcessing(envelope, EgaDac.class);
+    }
+
+    @RabbitListener(queues = SUBMISSION_EGA_DAC_POLICY_VALIDATOR)
+    public void processEgaDacPolicySubmission(EgaDacPolicyValidationEnvelopeToCoordinator envelope) {
+        basicSubmittableValidationProcessing(envelope, EgaDacPolicy.class);
+    }
+
+    @RabbitListener(queues = SUBMISSION_EGA_DATASET_VALIDATOR)
+    public void processEgaDatasetSubmission(EgaDatasetValidationEnvelopeToCoordinator envelope) {
+        basicSubmittableValidationProcessing(envelope, EgaDataset.class);
+    }
+
+
+    private void basicSubmittableValidationProcessing(ValidationEnvelopeToCoordinator envelope, Class<? extends BaseSubmittable> clazz) {
+        BaseSubmittable submittable = envelope.getEntityToValidate();
+
+        if (submittable == null) {
+            throw new IllegalArgumentException("The envelope should contain a " + clazz.getSimpleName().toLowerCase()+".");
         }
 
-        logger.info("Received validation request on assay {}", assay.getId());
+        logger.info("Received validation request on {} {}", clazz.getSimpleName(), submittable.getId());
 
-        if (!submittableHandler.handleSubmittable(assay, envelope.getSubmissionId(),
+        if (!submittableHandler.handleSubmittable(submittable, envelope.getSubmissionId(),
                 envelope.getDataTypeId(), envelope.getChecklistId())) {
-            logger.error("Error handling assay with id {}", assay.getId());
+            logger.error("Error handling {} with id {}", clazz.getSimpleName().toLowerCase(), submittable.getId());
         } else {
-            logger.trace("Triggering chained validation from assay {}", assay.getId());
-            chainedValidationService.triggerChainedValidation(assay, envelope.getSubmissionId());
+            logger.trace("Triggering chained validation from {} {}", clazz.getSimpleName().toLowerCase(), submittable.getId());
+            chainedValidationService.triggerChainedValidation(submittable, envelope.getSubmissionId());
         }
     }
 
@@ -194,6 +198,7 @@ public class CoordinatorListener {
             chainedValidationService.triggerChainedValidation(analysis, envelope.getSubmissionId());
         }
     }
+
 
     /**
      * File reference existence validator data entry point.

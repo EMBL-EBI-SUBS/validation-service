@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.validator.core.handlers;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,8 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
 
     @NonNull private ReferenceValidator referenceValidator;
 
-    @NonNull private AttributeValidator attributeValidator;
+    @NonNull @Getter
+    private AttributeValidator attributeValidator;
 
     @NonNull
     private DataTypeRepository dataTypeRepository;
@@ -53,9 +55,4 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
         return results;
     }
 
-    @Override
-    List<SingleValidationResult> validateAttributes(SampleValidationMessageEnvelope envelope) {
-        Sample sample = envelope.getEntityToValidate();
-        return ValidatorHelper.validateAttribute(sample.getAttributes(), sample.getId(), attributeValidator);
-    }
 }

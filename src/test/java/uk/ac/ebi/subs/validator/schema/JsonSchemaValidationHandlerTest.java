@@ -1,8 +1,13 @@
 package uk.ac.ebi.subs.validator.schema;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +21,7 @@ import uk.ac.ebi.subs.validator.coordinator.MessageEnvelopeTestHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
+import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,7 +38,9 @@ public class JsonSchemaValidationHandlerTest {
     DataTypeRepository dataTypeRepository;
     ChecklistRepository checklistRepository;
 
-    StudyValidationMessageEnvelope studyValidationMessageEnvelope;
+
+    SchemaValidationMessageEnvelope schemaValidationMessageEnvelope;
+
 
     JsonSchemaValidationError error = new JsonSchemaValidationError(Arrays.asList("fake error message"), "/a/fake/path");
 
@@ -40,7 +48,7 @@ public class JsonSchemaValidationHandlerTest {
     Checklist checklist;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         dataTypeRepository = Mockito.mock(DataTypeRepository.class);
         checklistRepository = Mockito.mock(ChecklistRepository.class);
 
@@ -52,9 +60,9 @@ public class JsonSchemaValidationHandlerTest {
         checklist.setValidationSchema(jsonStringToNode("{\"#dollar#schema\": \"bar\"}"));
         checklist.setId("cl1");
 
-        studyValidationMessageEnvelope = MessageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
-        studyValidationMessageEnvelope.setDataTypeId(dataType.getId());
-        studyValidationMessageEnvelope.setChecklistId(checklist.getId());
+        schemaValidationMessageEnvelope = MessageEnvelopeTestHelper.getSchemaValidationMessageEnveloper();
+        schemaValidationMessageEnvelope.setDataTypeId(dataType.getId());
+        schemaValidationMessageEnvelope.setChecklistId(checklist.getId());
 
         jsonSchemaValidationService = Mockito.mock(JsonSchemaValidationService.class);
         jsonSchemaValidationHandler = new JsonSchemaValidationHandler(dataTypeRepository, checklistRepository, jsonSchemaValidationService);
@@ -85,7 +93,7 @@ public class JsonSchemaValidationHandlerTest {
         );
 
 
-        SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSubmittableValidation(studyValidationMessageEnvelope);
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSubmittableValidation(schemaValidationMessageEnvelope);
 
 
         Mockito.verify(jsonSchemaValidationService, Mockito.times(1)).validate(Mockito.eq(expectedDtSchema), Mockito.any());

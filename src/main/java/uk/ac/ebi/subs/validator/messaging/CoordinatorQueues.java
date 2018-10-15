@@ -8,6 +8,12 @@ public class CoordinatorQueues {
     public static final String SUBMISSION_ASSAY_VALIDATOR = "usi-submission-assay-validator";
     public static final String SUBMISSION_ASSAY_DATA_VALIDATOR = "usi-submission-assaydata-validator";
     public static final String SUBMISSION_ANALYSIS_VALIDATOR = "usi-submission-analysis-validator";
+    public static final String SUBMISSION_SAMPLE_GROUP_VALIDATOR = "usi-submission-sample-group-validator";
+    public static final String SUBMISSION_PROTOCOL_VALIDATOR = "usi-submission-protocol-validator";
+    public static final String SUBMISSION_EGA_DAC_VALIDATOR = "usi-submission-ega-dac-validator";
+    public static final String SUBMISSION_EGA_DAC_POLICY_VALIDATOR = "usi-submission-ega-dac-policy-validator";
+    public static final String SUBMISSION_EGA_DATASET_VALIDATOR = "usi-submission-ega-dataset-validator";
+
 
     public static final String FILE_REF_VALIDATOR = "usi-file-reference-validator";
 
