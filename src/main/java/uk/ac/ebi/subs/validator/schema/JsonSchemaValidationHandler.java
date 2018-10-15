@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static uk.ac.ebi.subs.validator.schema.SchemaConverterFromMongo.fixStoredJson;
+import static uk.ac.ebi.subs.repository.util.SchemaConverterFromMongo.fixStoredJson;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generatePassingSingleValidationResult;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValidationResultsEnvelope;
 
