@@ -1,5 +1,8 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
@@ -17,7 +20,9 @@ import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
+import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -191,6 +196,20 @@ public class MessageEnvelopeTestHelper {
         studyValidationMessageEnvelope.setEntityToValidate(getStudy());
 
         return studyValidationMessageEnvelope;
+
+    }
+
+    public static SchemaValidationMessageEnvelope getSchemaValidationMessageEnveloper() throws IOException {
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = MessageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        String jsonIntermediate = objectMapper.writeValueAsString(studyValidationMessageEnvelope);
+        return  objectMapper.readValue(jsonIntermediate,SchemaValidationMessageEnvelope.class);
 
     }
 

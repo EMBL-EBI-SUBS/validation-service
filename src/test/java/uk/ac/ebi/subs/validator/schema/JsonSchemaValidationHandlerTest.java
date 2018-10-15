@@ -60,18 +60,9 @@ public class JsonSchemaValidationHandlerTest {
         checklist.setValidationSchema(jsonStringToNode("{\"#dollar#schema\": \"bar\"}"));
         checklist.setId("cl1");
 
-        StudyValidationMessageEnvelope studyValidationMessageEnvelope = MessageEnvelopeTestHelper.getStudyValidationMessageEnvelope();
-        studyValidationMessageEnvelope.setDataTypeId(dataType.getId());
-        studyValidationMessageEnvelope.setChecklistId(checklist.getId());
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        String jsonIntermediate = objectMapper.writeValueAsString(studyValidationMessageEnvelope);
-        schemaValidationMessageEnvelope = objectMapper.readValue(jsonIntermediate,SchemaValidationMessageEnvelope.class);
+        schemaValidationMessageEnvelope = MessageEnvelopeTestHelper.getSchemaValidationMessageEnveloper();
+        schemaValidationMessageEnvelope.setDataTypeId(dataType.getId());
+        schemaValidationMessageEnvelope.setChecklistId(checklist.getId());
 
         jsonSchemaValidationService = Mockito.mock(JsonSchemaValidationService.class);
         jsonSchemaValidationHandler = new JsonSchemaValidationHandler(dataTypeRepository, checklistRepository, jsonSchemaValidationService);
