@@ -32,7 +32,6 @@ import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepositoryCustom;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -43,14 +42,14 @@ public class ChainedValidationService {
     @NonNull
     private SubmittableHandler submittableHandler;
 
-    public void triggerChainedValidation(String submissionId){
+    public void triggerChainedValidation(String submissionId) {
         submissionContentsRepositories.stream()
                 .flatMap(repo -> repo.streamBySubmissionId(submissionId))
-                .forEach(storedSubmittable -> revalidate(storedSubmittable,submissionId));
+                .forEach(storedSubmittable -> revalidate(storedSubmittable, submissionId));
     }
 
 
-    private void revalidate(StoredSubmittable storedSubmittable, String submissionId){
+    private void revalidate(StoredSubmittable storedSubmittable, String submissionId) {
         submittableHandler.handleSubmittable(
                 storedSubmittable,
                 submissionId,
@@ -62,17 +61,19 @@ public class ChainedValidationService {
     public void triggerChainedValidation(Submittable triggerSubmittable, String submissionId) {
         AbstractSubsRef ref = submittableToRef(triggerSubmittable);
 
-        submissionContentsRepositories.stream()
-                .flatMap(repo -> {
-                    List<StoredSubmittable> itemsReferencingTriggerSubmittable = ((SubmittableRepositoryCustom) repo)
-                            .findBySubmissionIdAndReference(submissionId, ref);
-                    return itemsReferencingTriggerSubmittable.stream();
-                })
-                .forEach(storedSubmittable -> revalidate(storedSubmittable,submissionId));
+        if (ref != null) {
+            submissionContentsRepositories.stream()
+                    .flatMap(repo -> {
+                        List<StoredSubmittable> itemsReferencingTriggerSubmittable = ((SubmittableRepositoryCustom) repo)
+                                .findBySubmissionIdAndReference(submissionId, ref);
+                        return itemsReferencingTriggerSubmittable.stream();
+                    })
+                    .forEach(storedSubmittable -> revalidate(storedSubmittable, submissionId));
+        }
     }
 
     protected AbstractSubsRef submittableToRef(Submittable submittable) {
-        AbstractSubsRef ref = new SampleGroupRef();
+        AbstractSubsRef ref = null;
 
         if (submittable instanceof Analysis) {
             ref = new AnalysisRef();
@@ -108,11 +109,13 @@ public class ChainedValidationService {
             ref = new StudyRef();
         }
 
-        ref.setAccession(submittable.getAccession());
-        ref.setAlias(submittable.getAlias());
+        if (ref != null) {
+            ref.setAccession(submittable.getAccession());
+            ref.setAlias(submittable.getAlias());
 
-        if (submittable.getTeam() != null) {
-            ref.setTeam(submittable.getTeam().getName());
+            if (submittable.getTeam() != null) {
+                ref.setTeam(submittable.getTeam().getName());
+            }
         }
         return ref;
 
