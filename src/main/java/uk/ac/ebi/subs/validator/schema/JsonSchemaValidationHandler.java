@@ -1,12 +1,12 @@
 package uk.ac.ebi.subs.validator.schema;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -15,19 +15,18 @@ import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
-import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
-import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
+import uk.ac.ebi.subs.validator.schema.custom.SchemaObjectMapperProvider;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static uk.ac.ebi.subs.repository.util.SchemaConverterFromMongo.fixStoredJson;
 import static uk.ac.ebi.subs.validator.util.ValidationHelper.generatePassingSingleValidationResult;
@@ -35,25 +34,23 @@ import static uk.ac.ebi.subs.validator.util.ValidationHelper.generateSingleValid
 
 @Service
 @Data
+@RequiredArgsConstructor
 public class JsonSchemaValidationHandler {
 
-    private JsonSchemaValidationService validationService;
-    private ObjectMapper mapper = new ObjectMapper();
-    private SimpleModule module = new SimpleModule();
-    private DataTypeRepository dataTypeRepository;
-    private ChecklistRepository checklistRepository;
 
-    public JsonSchemaValidationHandler(
-            DataTypeRepository dataTypeRepository,
-            ChecklistRepository checklistRepository,
-            JsonSchemaValidationService validationService) {
-        this.dataTypeRepository = dataTypeRepository;
-        this.checklistRepository = checklistRepository;
-        this.validationService = validationService;
-        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY); // Null fields and empty collections are not included in the serialization.
-        this.module.addSerializer(LocalDate.class, new LocalDateCustomSerializer());
-        this.mapper.registerModule(module);
-    }
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
+    @NonNull
+    private ChecklistRepository checklistRepository;
+    @NonNull
+    private JsonSchemaValidationService validationService;
+    @NonNull
+    private ObjectMapper objectMapper;
+    @NonNull
+    private List<Class<? extends StoredSubmittable>> submittablesClassList;
+
+    private ObjectMapper customObjectMapper = SchemaObjectMapperProvider.createCustomObjectMapper();
+
 
     private Map<String, SubmittableRepository<? extends StoredSubmittable>> repositoryByClassSimpleName(Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap) {
         Map<String, SubmittableRepository<? extends StoredSubmittable>> map = new HashMap<>();
@@ -70,12 +67,14 @@ public class JsonSchemaValidationHandler {
         DataType dataType = null;
         Checklist checklist = null;
 
-        if (envelope.getDataTypeId() != null){
+        if (envelope.getDataTypeId() != null) {
             dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
         }
-        if (envelope.getChecklistId() != null){
+        if (envelope.getChecklistId() != null) {
             checklist = checklistRepository.findOne(envelope.getChecklistId());
         }
+
+        resolveMapperDifferences(envelope, dataType);
 
         List<JsonSchemaValidationError> errors = new ArrayList<>();
 
@@ -100,6 +99,31 @@ public class JsonSchemaValidationHandler {
         List<SingleValidationResult> singleValidationResultList = getSingleValidationResults(envelope, errors);
         return generateSingleValidationResultsEnvelope(envelope.getValidationResultVersion(),
                 envelope.getValidationResultUUID(), singleValidationResultList, ValidationAuthor.JsonSchema);
+    }
+
+    /* usi general object mapping config can be different to that required by the schema validator
+            e.g. it writes local dates as a 3 value array, instead of a string
+       rewrite using custom object mapper to fix
+    */
+    private void resolveMapperDifferences(SchemaValidationMessageEnvelope envelope, DataType dataType) {
+        if (dataType != null && dataType.getSubmittableClassName() != null) {
+            String submittableClassName = dataType.getSubmittableClassName();
+
+            Optional<Class<? extends StoredSubmittable>> optionalClass = submittablesClassList.stream()
+                    .filter(clazz -> clazz.getName().equals(submittableClassName))
+                    .findAny();
+
+            if (optionalClass.isPresent()) {
+
+                StoredSubmittable submittable = null;
+                try {
+                    submittable = objectMapper.treeToValue(envelope.getEntityToValidate(), optionalClass.get());
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                envelope.setEntityToValidate(customObjectMapper.valueToTree(submittable));
+            }
+        }
     }
 
     // -- Helper methods -- //

@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.validator.schema;
+package uk.ac.ebi.subs.validator.schema.custom;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +7,7 @@ import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
 
 import java.time.LocalDate;
 
-public class SchemaTestHelper {
+public class SchemaObjectMapperProvider {
 
     public static ObjectMapper createCustomObjectMapper () {
         ObjectMapper mapper = new ObjectMapper();

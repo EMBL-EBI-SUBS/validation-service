@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.validator.schema;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -24,16 +26,15 @@ import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVE
 import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVENT_VALIDATION_SUCCESS;
 
 @Service
+@RequiredArgsConstructor
 public class JsonSchemaValidatorListener {
     private static Logger logger = LoggerFactory.getLogger(JsonSchemaValidatorListener.class);
 
+    @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @NonNull
     private JsonSchemaValidationHandler validationHandler;
 
-    public JsonSchemaValidatorListener(RabbitMessagingTemplate rabbitMessagingTemplate, JsonSchemaValidationHandler validationHandler) {
-        this.rabbitMessagingTemplate = rabbitMessagingTemplate;
-        this.validationHandler = validationHandler;
-    }
 
     @RabbitListener(queues = SchemaQueues.SCHEMA_VALIDATION)
     public void handleSampleValidationRequest(SchemaValidationMessageEnvelope envelope) {
