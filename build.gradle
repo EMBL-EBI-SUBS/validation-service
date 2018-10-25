@@ -50,7 +50,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile("uk.ac.ebi.subs:subs-processing-model:2.5.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.19.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.21.1-SNAPSHOT")
     testCompile("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"
     }
