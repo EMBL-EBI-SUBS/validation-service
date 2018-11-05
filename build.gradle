@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.18.0-SNAPSHOT'
+version '2.20.1-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -50,8 +50,10 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile("uk.ac.ebi.subs:subs-processing-model:2.5.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.14.0-SNAPSHOT")
-    testCompile("org.springframework.boot:spring-boot-starter-test")
+    compile("uk.ac.ebi.subs:subs-repository:2.21.5-SNAPSHOT")
+    testCompile("org.springframework.boot:spring-boot-starter-test"){
+        exclude group: "com.vaadin.external.google", module:"android-json"
+    }
 
     compileOnly("org.projectlombok:lombok:1.16.18")
 }

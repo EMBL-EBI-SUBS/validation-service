@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static uk.ac.ebi.subs.validator.TestUtils.createStaticSample;
-import static uk.ac.ebi.subs.validator.schema.SchemaTestHelper.createCustomObjectMapper;
+import static uk.ac.ebi.subs.validator.schema.custom.SchemaObjectMapperProvider.createCustomObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

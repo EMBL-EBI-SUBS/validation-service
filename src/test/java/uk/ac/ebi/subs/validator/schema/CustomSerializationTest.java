@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 import static org.junit.Assert.assertEquals;
 import static uk.ac.ebi.subs.validator.TestUtils.createStaticSample;
-import static uk.ac.ebi.subs.validator.schema.SchemaTestHelper.createCustomObjectMapper;
+import static uk.ac.ebi.subs.validator.schema.custom.SchemaObjectMapperProvider.createCustomObjectMapper;
 
 public class CustomSerializationTest {
 

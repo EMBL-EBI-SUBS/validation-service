@@ -11,12 +11,18 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.validator.core.handlers.AnalysisHandler;
 import uk.ac.ebi.subs.validator.core.handlers.AssayDataHandler;
 import uk.ac.ebi.subs.validator.core.handlers.AssayHandler;
+import uk.ac.ebi.subs.validator.core.handlers.EgaDacPolicyHandler;
+import uk.ac.ebi.subs.validator.core.handlers.EgaDatasetHandler;
+import uk.ac.ebi.subs.validator.core.handlers.SampleGroupHandler;
 import uk.ac.ebi.subs.validator.core.handlers.SampleHandler;
 import uk.ac.ebi.subs.validator.core.handlers.StudyHandler;
 import uk.ac.ebi.subs.validator.core.messaging.Queues;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayDataValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.AssayValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.data.EgaDacPolicyValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.data.EgaDatasetValidationMessageEnvelope;
+import uk.ac.ebi.subs.validator.data.SampleGroupValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
@@ -44,9 +50,39 @@ public class ValidatorListener {
     private StudyHandler studyHandler;
     @NonNull
     private AnalysisHandler analysisHandler;
+    @NonNull
+    private EgaDacPolicyHandler egaDacPolicyHandler;
+    @NonNull
+    private EgaDatasetHandler egaDatasetHandler;
+    @NonNull
+    private SampleGroupHandler sampleGroupHandler;
 
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+
+    @RabbitListener(queues = Queues.CORE_EGA_DAC_POLICY_VALIDATION)
+    public void handleEgaDacPolicyValidationRequest(EgaDacPolicyValidationMessageEnvelope envelope) {
+        logger.debug("EgaDacPolicy validation request received with ID: {}.", envelope.getEntityToValidate().getId());
+
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope = egaDacPolicyHandler.handleValidationRequest(envelope);
+        sendResults(singleValidationResultsEnvelope);
+    }
+
+    @RabbitListener(queues = Queues.CORE_EGA_DATASET_VALIDATION)
+    public void handleEgaDatasetPolicyValidationRequest(EgaDatasetValidationMessageEnvelope envelope) {
+        logger.debug("EgaDataset validation request received with ID: {}.", envelope.getEntityToValidate().getId());
+
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope = egaDatasetHandler.handleValidationRequest(envelope);
+        sendResults(singleValidationResultsEnvelope);
+    }
+
+    @RabbitListener(queues = Queues.CORE_SAMPLE_GROUP_VALIDATION)
+    public void handleSampleGroupPolicyValidationRequest(SampleGroupValidationMessageEnvelope envelope) {
+        logger.debug("SampleGroup validation request received with ID: {}.", envelope.getEntityToValidate().getId());
+
+        SingleValidationResultsEnvelope singleValidationResultsEnvelope = sampleGroupHandler.handleValidationRequest(envelope);
+        sendResults(singleValidationResultsEnvelope);
+    }
 
     @RabbitListener(queues = Queues.CORE_ASSAY_VALIDATION)
     public void handleAssayValidationRequest(AssayValidationMessageEnvelope envelope) {

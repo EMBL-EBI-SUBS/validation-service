@@ -180,6 +180,98 @@ public class CoordinatorMessagingConfiguration {
                 .with(SUBMITTABLE_ANALYSIS_UPDATED);
     }
 
+    @Bean
+    Queue submissionSampleGroupValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_SAMPLE_GROUP_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedSampleGroupSubmissionBinding(Queue submissionSampleGroupValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionSampleGroupValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_SAMPLE_GROUP_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedSampleGroupSubmissionBinding(Queue submissionSampleGroupValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder.bind(submissionSampleGroupValidatorQueue).to(submissionExchange)
+                .with(SUBMITTABLE_SAMPLE_GROUP_UPDATED);
+    }
+
+    @Bean
+    Queue submissionProtocolValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_PROTOCOL_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedProtocolSubmissionBinding(Queue submissionProtocolValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionProtocolValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_PROTOCOL_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedProtocolSubmissionBinding(Queue submissionProtocolValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionProtocolValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_PROTOCOL_UPDATED);
+    }
+
+    @Bean
+    Queue submissionEgaDacValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_EGA_DAC_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedEgaDacSubmissionBinding(Queue submissionEgaDacValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDacValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DAC_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedEgaDacSubmissionBinding(Queue submissionEgaDacValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDacValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DAC_UPDATED);
+    }
+
+    @Bean
+    Queue submissionEgaDacPolicyValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_EGA_DAC_POLICY_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedEgaDacPolicySubmissionBinding(Queue submissionEgaDacPolicyValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDacPolicyValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DAC_POLICY_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedEgaDacPolicySubmissionBinding(Queue submissionEgaDacPolicyValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDacPolicyValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DAC_POLICY_UPDATED);
+    }
+
+    @Bean
+    Queue submissionEgaDatasetValidatorQueue() { return  Queues.buildQueueWithDlx(SUBMISSION_EGA_DATASET_VALIDATOR);}
+
+    @Bean
+    Binding validationForCreatedEgaDatasetSubmissionBinding(Queue submissionEgaDatasetValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDatasetValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DATASET_CREATED);
+    }
+
+    @Bean
+    Binding validationForUpdatedEgaDatasetSubmissionBinding(Queue submissionEgaDatasetValidatorQueue, TopicExchange submissionExchange) {
+        return BindingBuilder
+                .bind(submissionEgaDatasetValidatorQueue)
+                .to(submissionExchange)
+                .with(SUBMITTABLE_EGA_DATASET_UPDATED);
+    }
 
     /**
      * Instantiate a {@link Queue} for validate file reference existence.

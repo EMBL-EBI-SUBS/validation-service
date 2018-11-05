@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.validator.schema;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -15,6 +17,7 @@ import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.messaging.SchemaQueues;
+import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,52 +26,19 @@ import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVE
 import static uk.ac.ebi.subs.validator.messaging.ValidatorsCommonRoutingKeys.EVENT_VALIDATION_SUCCESS;
 
 @Service
+@RequiredArgsConstructor
 public class JsonSchemaValidatorListener {
     private static Logger logger = LoggerFactory.getLogger(JsonSchemaValidatorListener.class);
 
+    @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @NonNull
     private JsonSchemaValidationHandler validationHandler;
 
-    public JsonSchemaValidatorListener(RabbitMessagingTemplate rabbitMessagingTemplate, JsonSchemaValidationHandler validationHandler) {
-        this.rabbitMessagingTemplate = rabbitMessagingTemplate;
-        this.validationHandler = validationHandler;
-    }
 
-    @RabbitListener(queues = SchemaQueues.SCHEMA_SAMPLE_VALIDATION)
-    public void handleSampleValidationRequest(SampleValidationMessageEnvelope envelope) {
-        logger.debug("Sample validation request received with ID: {}.", envelope.getEntityToValidate().getId());
-
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
-        sendResults(resultsEnvelope);
-    }
-
-    @RabbitListener(queues = SchemaQueues.SCHEMA_STUDY_VALIDATION)
-    public void handleStudyValidationRequest(StudyValidationMessageEnvelope envelope) {
-        logger.debug("Study validation request received with ID: {}.", envelope.getEntityToValidate().getId());
-
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
-        sendResults(resultsEnvelope);
-    }
-
-    @RabbitListener(queues = SchemaQueues.SCHEMA_ASSAY_VALIDATION)
-    public void handleAssayValidationRequest(AssayValidationMessageEnvelope envelope) {
-        logger.debug("Assay validation request received with ID: {}.", envelope.getEntityToValidate().getId());
-
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
-        sendResults(resultsEnvelope);
-    }
-
-    @RabbitListener(queues = SchemaQueues.SCHEMA_ASSAYDATA_VALIDATION)
-    public void handleAssayDataValidationRequest(AssayDataValidationMessageEnvelope envelope) {
-        logger.debug("AssayData validation request received with ID: {}.", envelope.getEntityToValidate().getId());
-
-        SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
-        sendResults(resultsEnvelope);
-    }
-
-    @RabbitListener(queues = SchemaQueues.SCHEMA_ANALYSIS_VALIDATION)
-    public void handleAnalysisValidationRequest(AnalysisValidationEnvelope envelope) {
-        logger.debug("Analysis validation request received with ID: {}.", envelope.getEntityToValidate().getId());
+    @RabbitListener(queues = SchemaQueues.SCHEMA_VALIDATION)
+    public void handleSampleValidationRequest(SchemaValidationMessageEnvelope envelope) {
+        logger.debug("Schema validation request received: {}.", envelope);
 
         SingleValidationResultsEnvelope resultsEnvelope = validationHandler.handleSubmittableValidation(envelope);
         sendResults(resultsEnvelope);

@@ -1,8 +1,12 @@
 package uk.ac.ebi.subs.validator.core.handlers;
 
+import uk.ac.ebi.subs.data.submittable.BaseSubmittable;
+import uk.ac.ebi.subs.data.submittable.Study;
+import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
+import uk.ac.ebi.subs.validator.data.StudyValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
@@ -16,7 +20,7 @@ public abstract class AbstractHandler<T extends ValidationMessageEnvelope> {
 
     abstract List<SingleValidationResult> validateSubmittable(T envelope);
 
-    abstract List<SingleValidationResult> validateAttributes(T envelope);
+    abstract AttributeValidator getAttributeValidator();
 
     public SingleValidationResultsEnvelope handleValidationRequest(T envelope) {
         List<SingleValidationResult> resultList = new ArrayList<>();
@@ -35,6 +39,11 @@ public abstract class AbstractHandler<T extends ValidationMessageEnvelope> {
         }
 
         return generateSingleValidationResultsEnvelope(envelope, interestingResults );
+    }
+
+    List<SingleValidationResult> validateAttributes(T envelope) {
+        BaseSubmittable submittable = envelope.getEntityToValidate();
+        return ValidatorHelper.validateAttribute(submittable.getAttributes(), submittable.getId(), getAttributeValidator());
     }
 
     private static boolean statusIsNotPassOrPending(SingleValidationResult r) {

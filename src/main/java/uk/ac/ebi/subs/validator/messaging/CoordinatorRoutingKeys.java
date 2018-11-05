@@ -27,5 +27,22 @@ public class CoordinatorRoutingKeys {
     static final String SUBMITTABLE_ANALYSIS_CREATED = SUBMITTABLE_CREATED + ".analysis";
     static final String SUBMITTABLE_ANALYSIS_UPDATED = SUBMITTABLE_UPDATED + ".analysis";
 
+    static final String SUBMITTABLE_SAMPLE_GROUP_CREATED = SUBMITTABLE_CREATED + ".samplegroup";
+    static final String SUBMITTABLE_SAMPLE_GROUP_UPDATED = SUBMITTABLE_UPDATED + ".samplegroup";
+
+    static final String SUBMITTABLE_PROTOCOL_CREATED = SUBMITTABLE_CREATED + ".protocol";
+    static final String SUBMITTABLE_PROTOCOL_UPDATED = SUBMITTABLE_UPDATED + ".protocol";
+
+    static final String SUBMITTABLE_EGA_DAC_CREATED = SUBMITTABLE_CREATED + ".egadac";
+    static final String SUBMITTABLE_EGA_DAC_UPDATED = SUBMITTABLE_UPDATED + ".egadac";
+
+    static final String SUBMITTABLE_EGA_DAC_POLICY_CREATED = SUBMITTABLE_CREATED + ".egadacpolicy";
+    static final String SUBMITTABLE_EGA_DAC_POLICY_UPDATED = SUBMITTABLE_UPDATED + ".egadacpolicy";
+
+    static final String SUBMITTABLE_EGA_DATASET_CREATED = SUBMITTABLE_CREATED + ".egadataset";
+    static final String SUBMITTABLE_EGA_DATASET_UPDATED = SUBMITTABLE_UPDATED + ".egadataset";
+
+
+
     static final String EVENT_SUBMITTABLE_DELETED = "usi.submittable.deletion";
 }
