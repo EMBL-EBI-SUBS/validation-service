@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -48,6 +49,7 @@ public class AnalysisValidationMessageExpanderTest {
 
     private Team team;
     private Submission submission;
+    private Submission submission2;
     private Study savedStudy;
     private Sample savedSample;
 
@@ -55,6 +57,7 @@ public class AnalysisValidationMessageExpanderTest {
     public void setup() {
         team = MessageEnvelopeTestHelper.createTeam();
         submission = MessageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
+        submission2 = MessageEnvelopeTestHelper.saveNewSubmission(submissionStatusRepository, submissionRepository, team);
         savedStudy = MessageEnvelopeTestHelper.createAndSaveStudy(studyRepository, submission, team);
         savedSample = MessageEnvelopeTestHelper.createAndSaveSamples(sampleRepository, submission, team, 1).get(0);
     }
@@ -68,8 +71,9 @@ public class AnalysisValidationMessageExpanderTest {
     }
 
     @Test
-    public void test_analysis_expansion() {
+    public void test_analysis_expansion_with_accessioned_sample_and_study() {
         AnalysisValidationEnvelope analysisValidationEnvelope = createAnalysisValidationEnvelope();
+        analysisValidationEnvelope.setSubmissionId(submission.getId());
 
         SampleRef sampleRef = new SampleRef();
         sampleRef.setAlias(savedSample.getAlias());
@@ -82,7 +86,6 @@ public class AnalysisValidationMessageExpanderTest {
 
         analysisValidationEnvelope.getEntityToValidate().getStudyRefs().add(studyRef);
 
-
         expander.expandEnvelope(analysisValidationEnvelope);
 
         assertThat(analysisValidationEnvelope.getStudies().get(0).getBaseSubmittable(), is(savedStudy));
@@ -94,6 +97,35 @@ public class AnalysisValidationMessageExpanderTest {
         assertThat(sampleFromExpandedEnvelope.getSubmissionId(), is(savedSample.getSubmission().getId()));
         assertThat(sampleFromExpandedEnvelope.getTeam(), is(savedSample.getTeam()));
         assertThat(sampleFromExpandedEnvelope.getTitle(), is(savedSample.getTitle()));
+    }
+
+    @Test
+    public void test_analysis_expansion_with_sample_and_study_not_accessioned() {
+        AnalysisValidationEnvelope analysisValidationEnvelope = createAnalysisValidationEnvelope();
+        analysisValidationEnvelope.setSubmissionId(submission.getId());
+
+        savedSample.setAccession(null);
+        savedSample.setSubmission(submission2);
+        sampleRepository.save(savedSample);
+        SampleRef sampleRef = new SampleRef();
+        sampleRef.setAlias(savedSample.getAlias());
+        sampleRef.setTeam(team.getName());
+
+        analysisValidationEnvelope.getEntityToValidate().getSampleRefs().add(sampleRef);
+
+        savedStudy.setAccession(null);
+        savedStudy.setSubmission(submission2);
+        studyRepository.save(savedStudy);
+        StudyRef studyRef = new StudyRef();
+        studyRef.setAlias(savedStudy.getAlias());
+        studyRef.setTeam(team.getName());
+
+        analysisValidationEnvelope.getEntityToValidate().getStudyRefs().add(studyRef);
+
+        expander.expandEnvelope(analysisValidationEnvelope);
+
+        assertThat(analysisValidationEnvelope.getStudies().size(), is(equalTo(0)));
+        assertThat(analysisValidationEnvelope.getSamples().size(), is(equalTo(0)));
     }
 
     private AnalysisValidationEnvelope createAnalysisValidationEnvelope() {

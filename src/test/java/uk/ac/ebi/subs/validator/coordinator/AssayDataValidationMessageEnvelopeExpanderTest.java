@@ -87,6 +87,7 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeSameSubmissionByAccessionForAssay() throws Exception {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
+        assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         AssayRef assayRef = new AssayRef();
         assayRef.setAccession(savedAssay.getAccession());
         assayDataValidationMessageEnvelope.getEntityToValidate().setAssayRefs(Arrays.asList(assayRef));
@@ -97,6 +98,7 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeSameSubmissionByAliasForAssay() throws Exception {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
+        assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         AssayRef assayRef = new AssayRef();
         assayRef.setAlias(savedAssay.getAlias());
         assayRef.setTeam(team.getName());
@@ -130,6 +132,7 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeSameSubmissionByAccessionForProtocol() throws Exception {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
+        assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         List<ProtocolUse> protocolUses = new ArrayList<>();
         for(Protocol protocol : savedProtocols){
             ProtocolUse protocolUse = new ProtocolUse();

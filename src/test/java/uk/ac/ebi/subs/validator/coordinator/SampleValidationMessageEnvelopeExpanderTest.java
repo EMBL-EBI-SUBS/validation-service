@@ -66,7 +66,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
     @Test
     public void testExpandEnvelopeSameSubmissionByAccession() throws Exception {
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope();
+        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
 
         for (Sample sample : savedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -82,7 +82,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
     @Test
     public void testExpandEnvelopeSameSubmissionByAlias() throws Exception {
 
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope();
+        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
 
         for (Sample sample : savedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -97,19 +97,20 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         SampleAssertionHelper.assertSampleList(savedSampleList, sampleList);
     }
 
-    private SampleValidationMessageEnvelope createSampleValidationMessageEnvelope() {
+    private SampleValidationMessageEnvelope createSampleValidationMessageEnvelope(String submissionId) {
         SampleValidationMessageEnvelope sampleValidationMessageEnvelope = new SampleValidationMessageEnvelope();
         uk.ac.ebi.subs.data.submittable.Sample submittableSample = new uk.ac.ebi.subs.data.submittable.Sample();
         submittableSample.setTeam(team);
         submittableSample.setAccession(UUID.randomUUID().toString());
         submittableSample.setAlias(UUID.randomUUID().toString());
         sampleValidationMessageEnvelope.setEntityToValidate(submittableSample);
+        sampleValidationMessageEnvelope.setSubmissionId(submissionId);
         return sampleValidationMessageEnvelope;
     }
 
     @Test
     public void testExpandEnvelopeSameSubmissionByAccessionNotInRepo() throws Exception {
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope();
+        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
         List<Sample>notSavedSampleList = MessageEnvelopeTestHelper.createSamples(submission, team, 1);
 
         for (Sample sample : notSavedSampleList) {
