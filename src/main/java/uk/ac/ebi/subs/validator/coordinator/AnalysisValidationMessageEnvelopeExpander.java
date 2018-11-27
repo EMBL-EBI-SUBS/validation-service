@@ -29,15 +29,15 @@ public class AnalysisValidationMessageEnvelopeExpander extends ValidationMessage
     @Override
     void expandEnvelope(AnalysisValidationEnvelope validationMessageEnvelope) {
         Collection<SampleRef> sampleRefs = validationMessageEnvelope.getEntityToValidate().getSampleRefs();
-        List<Submittable<Sample>> wrappedSamples = wrappedSamples(sampleRefs);
+        List<Submittable<Sample>> wrappedSamples = wrappedSamples(validationMessageEnvelope, sampleRefs);
         validationMessageEnvelope.setSamples(wrappedSamples);
 
         Collection<StudyRef> studyRefs = validationMessageEnvelope.getEntityToValidate().getStudyRefs();
-        List<Submittable<Study>> wrappedStudies = wrappedStudies(studyRefs);
+        List<Submittable<Study>> wrappedStudies = wrappedStudies(validationMessageEnvelope, studyRefs);
         validationMessageEnvelope.setStudies(wrappedStudies);
     }
 
-    private List<Submittable<Sample>> wrappedSamples(Collection<SampleRef> sampleRefs) {
+    private List<Submittable<Sample>> wrappedSamples(AnalysisValidationEnvelope validationMessageEnvelope, Collection<SampleRef> sampleRefs) {
         List<Submittable<Sample>> samples = new ArrayList<>();
 
         for (SampleRef sampleRef : sampleRefs) {
@@ -49,7 +49,7 @@ public class AnalysisValidationMessageEnvelopeExpander extends ValidationMessage
                 sampleStoredSubmittable = sampleRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(sampleRef.getTeam(), sampleRef.getAlias());
             }
 
-            if (sampleStoredSubmittable != null) {
+            if (canAddSubmittable(validationMessageEnvelope, sampleStoredSubmittable)) {
                 Submittable<uk.ac.ebi.subs.data.submittable.Sample> sampleSubmittable = new Submittable<>(sampleStoredSubmittable, sampleStoredSubmittable.getSubmission().getId());
                 samples.add(sampleSubmittable);
             }
@@ -58,7 +58,7 @@ public class AnalysisValidationMessageEnvelopeExpander extends ValidationMessage
         return samples;
     }
 
-    private List<Submittable<Study>> wrappedStudies(Collection<StudyRef> studyRefs) {
+    private List<Submittable<Study>> wrappedStudies(AnalysisValidationEnvelope validationMessageEnvelope, Collection<StudyRef> studyRefs) {
         List<Submittable<Study>> studies = new ArrayList<>();
 
         for (StudyRef studyRef : studyRefs) {
@@ -70,7 +70,7 @@ public class AnalysisValidationMessageEnvelopeExpander extends ValidationMessage
                 studyStoredSubmittable = studyRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(studyRef.getTeam(), studyRef.getAlias());
             }
 
-            if (studyStoredSubmittable != null) {
+            if (canAddSubmittable(validationMessageEnvelope, studyStoredSubmittable)) {
                 Submittable<uk.ac.ebi.subs.data.submittable.Study> sampleSubmittable = new Submittable<>(studyStoredSubmittable, studyStoredSubmittable.getSubmission().getId());
                 studies.add(sampleSubmittable);
             }

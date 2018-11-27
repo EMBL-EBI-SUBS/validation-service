@@ -41,7 +41,7 @@ public class AssayValidationMessageEnvelopeExpander extends ValidationMessageEnv
                 sample = sampleRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(sampleUse.getSampleRef().getTeam(), sampleUse.getSampleRef().getAlias());
             }
 
-            if (sample != null ) {
+            if (canAddSubmittable(validationMessageEnvelope,sample)) {
                 Submittable<uk.ac.ebi.subs.data.submittable.Sample> sampleSubmittable = new Submittable<>(sample, sample.getSubmission().getId());
                 validationMessageEnvelope.getSampleList().add(sampleSubmittable);
             }
@@ -58,10 +58,9 @@ public class AssayValidationMessageEnvelopeExpander extends ValidationMessageEnv
             study = studyRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(studyRef.getTeam(), studyRef.getAlias());
         }
 
-        if (study != null) {
-            Submittable<uk.ac.ebi.subs.data.submittable.Study> studySubmittable = new Submittable<>(study,study.getSubmission().getId());
+        if (canAddSubmittable(validationMessageEnvelope, study)) {
+            Submittable<uk.ac.ebi.subs.data.submittable.Study> studySubmittable = new Submittable<>(study, study.getSubmission().getId());
             validationMessageEnvelope.setStudy(studySubmittable);
         }
-
     }
 }

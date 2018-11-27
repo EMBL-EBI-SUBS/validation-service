@@ -31,12 +31,10 @@ public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEn
                 sample = sampleRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(sampleRelationship.getTeam(), sampleRelationship.getAlias());
             }
 
-            if (sample != null) {
+            if (canAddSubmittable(validationMessageEnvelope, sample)) {
                 Submittable<uk.ac.ebi.subs.data.submittable.Sample> sampleSubmittable = new Submittable<>(sample, sample.getSubmission().getId());
                 validationMessageEnvelope.getSampleList().add(sampleSubmittable);
             }
-
         }
-
     }
 }
