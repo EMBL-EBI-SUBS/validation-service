@@ -38,7 +38,7 @@ public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnv
             project = projectRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(projectRef.getTeam(), projectRef.getAlias());
         }
 
-        if (project != null) {
+        if (canAddSubmittable(validationMessageEnvelope,project)) {
             Submittable<uk.ac.ebi.subs.data.submittable.Project> projectSubmittable = new Submittable<>(project, project.getSubmission().getId());
             validationMessageEnvelope.setProject(projectSubmittable);
         }
@@ -56,6 +56,5 @@ public class StudyValidationMessageEnvelopeExpander extends ValidationMessageEnv
             protocols.add(new Submittable<>(protocol, project == null ? null : project.getSubmission().getId()));
         }
         validationMessageEnvelope.setProtocols(protocols);
-
     }
 }

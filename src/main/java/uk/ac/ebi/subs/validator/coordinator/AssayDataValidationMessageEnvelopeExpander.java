@@ -43,18 +43,18 @@ public class AssayDataValidationMessageEnvelopeExpander extends ValidationMessag
                 assayStoredSubmittable = assayRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(assayRef.getTeam(), assayRef.getAlias());
             }
 
-            if (assayStoredSubmittable != null) {
+            if (canAddSubmittable(assayDataValidationMessageEnvelope, assayStoredSubmittable)) {
                 Submittable<uk.ac.ebi.subs.data.submittable.Assay> assaySubmittable = new Submittable<>(assayStoredSubmittable, assayStoredSubmittable.getSubmission().getId());
                 assays.add(assaySubmittable);
             }
-            expandProtocols(assayStoredSubmittable, protocols);
+            expandProtocols(assayDataValidationMessageEnvelope, assayStoredSubmittable, protocols);
         }
 
         assayDataValidationMessageEnvelope.setAssays(assays);
         assayDataValidationMessageEnvelope.setProtocols(protocols);
     }
 
-    private void expandProtocols(Assay assay, List<Submittable<Protocol>> protocols) {
+    private void expandProtocols(AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope, Assay assay, List<Submittable<Protocol>> protocols) {
         List<ProtocolUse> protocolUses = assay.getProtocolUses();
         if (protocols != null && !protocolUses.isEmpty()) {
             for (ProtocolUse protocolUse : protocolUses) {
@@ -66,7 +66,7 @@ public class AssayDataValidationMessageEnvelopeExpander extends ValidationMessag
                     } else {
                         protocol = protocolRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(protocolRef.getTeam(), protocolRef.getAlias());
                     }
-                    if (!addedBefore(protocol, protocols)) {
+                    if (canAddSubmittable(assayDataValidationMessageEnvelope, protocol) && !addedBefore(protocol, protocols)) {
                         Submittable<uk.ac.ebi.subs.data.submittable.Protocol> protocolSubmittable = new Submittable<>(protocol, protocol.getSubmission().getId());
                         protocols.add(protocolSubmittable);
                     }

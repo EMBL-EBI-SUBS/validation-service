@@ -50,10 +50,10 @@ public class StudyValidationMessageEnvelopeExpanderTest {
     @Autowired
     StudyValidationMessageEnvelopeExpander studyValidationMessageEnvelopeExpander;
 
-    Team team;
-    Submission submission;
-    Project savedProject;
-    List<Protocol> savedProtocols;
+    private Team team;
+    private Submission submission;
+    private Project savedProject;
+    private List<Protocol> savedProtocols;
 
     @Before
     public void setup() {
@@ -73,7 +73,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     @Test
     public void testExpandEnvelopeSameSubmissionByAccession() throws Exception {
-        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope();
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope(submission.getId());
         ProjectRef projectRef = new ProjectRef();
         projectRef.setAccession(savedProject.getAccession());
         studyValidationMessageEnvelope.getEntityToValidate().setProjectRef(projectRef);
@@ -84,7 +84,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     @Test
     public void testExpandEnvelopeSameSubmissionByAlias() throws Exception {
-        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope();
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope(submission.getId());
         ProjectRef projectRef = new ProjectRef();
         projectRef.setAlias(savedProject.getAlias());
         projectRef.setTeam(team.getName());
@@ -96,20 +96,21 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     @Test
     public void testExpandEnvelopeWithProtocols() throws Exception {
-        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope();
+        StudyValidationMessageEnvelope studyValidationMessageEnvelope = createStudyValidationMessageEnvelope(submission.getId());
         studyValidationMessageEnvelope.getEntityToValidate().setProtocolRefs(MessageEnvelopeTestHelper.createProtocolRefs(savedProtocols));
         studyValidationMessageEnvelopeExpander.expandEnvelope(studyValidationMessageEnvelope);
         assertEquals(savedProtocols.size(),studyValidationMessageEnvelope.getProtocols().size());
         assertThat(savedProtocols.get(0).getAlias(),is(studyValidationMessageEnvelope.getProtocols().get(0).getAlias()));
     }
 
-    private StudyValidationMessageEnvelope createStudyValidationMessageEnvelope() {
+    private StudyValidationMessageEnvelope createStudyValidationMessageEnvelope(String submissionId) {
         StudyValidationMessageEnvelope studyValidationMessageEnvelope = new StudyValidationMessageEnvelope();
         uk.ac.ebi.subs.data.submittable.Study submittableStudy = new uk.ac.ebi.subs.data.submittable.Study();
         submittableStudy.setTeam(team);
         submittableStudy.setAccession(UUID.randomUUID().toString());
         submittableStudy.setAlias(UUID.randomUUID().toString());
         studyValidationMessageEnvelope.setEntityToValidate(submittableStudy);
+        studyValidationMessageEnvelope.setSubmissionId(submissionId);
         return studyValidationMessageEnvelope;
     }
 
@@ -124,11 +125,8 @@ public class StudyValidationMessageEnvelopeExpanderTest {
         return projectRepository.save(project);
     }
 
-
     private List<Protocol> createAndSaveProtocols(Team team) {
         List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
         return protocolRepository.save(protocols);
     }
-
-
 }
