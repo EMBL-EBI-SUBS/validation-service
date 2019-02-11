@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.20.2-SNAPSHOT'
+version '2.20.3-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -51,6 +51,9 @@ dependencies {
     compile("uk.ac.ebi.subs:subs-processing-model:2.5.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-repository:2.21.5-SNAPSHOT")
+
+    compile("de.siegmar:logback-gelf:1.1.0")
+    
     testCompile("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"
     }
