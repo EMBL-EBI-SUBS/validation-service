@@ -12,8 +12,12 @@ plugins {
     id 'com.sourcemuse.mongo' version '1.0.0'
 }
 
+springBoot {
+    buildInfo()
+}
+
 group 'uk.ac.ebi.subs'
-version '2.21.1-SNAPSHOT'
+version '2.21.2-SNAPSHOT'
 
 
 apply plugin: 'java'
