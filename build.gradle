@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.21.1-SNAPSHOT'
+version '2.21.2-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -29,8 +29,10 @@ ext.gradle_env = hasProperty('env') ? env : 'dev'
 bootRepackage {
     mainClass = "uk.ac.ebi.subs.ValidationServiceApplication"
 }
+
 springBoot {
     executable = true
+    buildInfo()
 }
 
 repositories {
