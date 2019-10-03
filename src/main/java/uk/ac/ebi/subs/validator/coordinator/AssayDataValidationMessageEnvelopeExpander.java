@@ -31,27 +31,29 @@ public class AssayDataValidationMessageEnvelopeExpander extends ValidationMessag
     @Override
     public void expandEnvelope(AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope) {
         final List<AssayRef> assayRefs = assayDataValidationMessageEnvelope.getEntityToValidate().getAssayRefs();
-        final List<Submittable<uk.ac.ebi.subs.data.submittable.Assay>> assays = new ArrayList<>();
-        final List<Submittable<Protocol>> protocols = new ArrayList<>();
+        if (assayRefs != null && !assayRefs.isEmpty()) {
+            final List<Submittable<uk.ac.ebi.subs.data.submittable.Assay>> assays = new ArrayList<>();
+            final List<Submittable<Protocol>> protocols = new ArrayList<>();
 
-        for (AssayRef assayRef : assayRefs) {
-            uk.ac.ebi.subs.repository.model.Assay assayStoredSubmittable;
+            for (AssayRef assayRef : assayRefs) {
+                uk.ac.ebi.subs.repository.model.Assay assayStoredSubmittable;
 
-            if (assayRef.getAccession() != null && !assayRef.getAccession().isEmpty()) {
-                assayStoredSubmittable = assayRepository.findFirstByAccessionOrderByCreatedDateDesc(assayRef.getAccession());
-            } else {
-                assayStoredSubmittable = assayRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(assayRef.getTeam(), assayRef.getAlias());
+                if (assayRef.getAccession() != null && !assayRef.getAccession().isEmpty()) {
+                    assayStoredSubmittable = assayRepository.findFirstByAccessionOrderByCreatedDateDesc(assayRef.getAccession());
+                } else {
+                    assayStoredSubmittable = assayRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(assayRef.getTeam(), assayRef.getAlias());
+                }
+
+                if (canAddSubmittable(assayDataValidationMessageEnvelope, assayStoredSubmittable)) {
+                    Submittable<uk.ac.ebi.subs.data.submittable.Assay> assaySubmittable = new Submittable<>(assayStoredSubmittable, assayStoredSubmittable.getSubmission().getId());
+                    assays.add(assaySubmittable);
+                    expandProtocols(assayDataValidationMessageEnvelope, assayStoredSubmittable, protocols);
+                }
             }
 
-            if (canAddSubmittable(assayDataValidationMessageEnvelope, assayStoredSubmittable)) {
-                Submittable<uk.ac.ebi.subs.data.submittable.Assay> assaySubmittable = new Submittable<>(assayStoredSubmittable, assayStoredSubmittable.getSubmission().getId());
-                assays.add(assaySubmittable);
-            }
-            expandProtocols(assayDataValidationMessageEnvelope, assayStoredSubmittable, protocols);
+            assayDataValidationMessageEnvelope.setAssays(assays);
+            assayDataValidationMessageEnvelope.setProtocols(protocols);
         }
-
-        assayDataValidationMessageEnvelope.setAssays(assays);
-        assayDataValidationMessageEnvelope.setProtocols(protocols);
     }
 
     private void expandProtocols(AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope, Assay assay, List<Submittable<Protocol>> protocols) {

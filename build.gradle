@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.21.3'
+version '2.21.4'
 
 
 apply plugin: 'java'
