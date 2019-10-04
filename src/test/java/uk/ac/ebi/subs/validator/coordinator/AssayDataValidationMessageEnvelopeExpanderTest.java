@@ -27,11 +27,14 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableMongoRepositories(basePackageClasses = {SampleRepository.class, AssayRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
@@ -85,27 +88,53 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
     }
 
     @Test
-    public void testExpandEnvelopeSameSubmissionByAccessionForAssay() throws Exception {
+    public void testExpandEnvelopeWithNotExistingAssayRefs() {
+        AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
+        assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
+        AssayRef assayRef = new AssayRef();
+        assayRef.setAlias("Dummy assay");
+        assayDataValidationMessageEnvelope.getEntityToValidate().setAssayRefs(Collections.singletonList(assayRef));
+
+        assayDataValidationMessageEnvelopeExpander.expandEnvelope(assayDataValidationMessageEnvelope);
+
+        assertThat(assayDataValidationMessageEnvelope.getAssays(), is(empty()));
+    }
+
+    @Test
+    public void testExpandEnvelopeWithoutAssayRefs() {
+        AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
+        assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
+
+        assayDataValidationMessageEnvelopeExpander.expandEnvelope(assayDataValidationMessageEnvelope);
+
+        assertThat(assayDataValidationMessageEnvelope.getAssays(), is(empty()));
+    }
+
+    @Test
+    public void testExpandEnvelopeSameSubmissionByAccessionForAssay() {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
         assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         AssayRef assayRef = new AssayRef();
         assayRef.setAccession(savedAssay.getAccession());
         assayDataValidationMessageEnvelope.getEntityToValidate().setAssayRefs(Arrays.asList(assayRef));
+
         assayDataValidationMessageEnvelopeExpander.expandEnvelope(assayDataValidationMessageEnvelope);
+
         assertThat(savedAssay,is(assayDataValidationMessageEnvelope.getAssays().iterator().next().getBaseSubmittable()));
     }
 
     @Test
-    public void testExpandEnvelopeSameSubmissionByAliasForAssay() throws Exception {
+    public void testExpandEnvelopeSameSubmissionByAliasForAssay() {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
         assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         AssayRef assayRef = new AssayRef();
         assayRef.setAlias(savedAssay.getAlias());
         assayRef.setTeam(team.getName());
-        assayDataValidationMessageEnvelope.getEntityToValidate().setAssayRefs(Arrays.asList(assayRef));
-        assayDataValidationMessageEnvelopeExpander.expandEnvelope(assayDataValidationMessageEnvelope);
-        assertThat(savedAssay,is(assayDataValidationMessageEnvelope.getAssays().iterator().next().getBaseSubmittable()));
+        assayDataValidationMessageEnvelope.getEntityToValidate().setAssayRefs(Collections.singletonList(assayRef));
 
+        assayDataValidationMessageEnvelopeExpander.expandEnvelope(assayDataValidationMessageEnvelope);
+
+        assertThat(savedAssay,is(assayDataValidationMessageEnvelope.getAssays().iterator().next().getBaseSubmittable()));
     }
 
     private AssayDataValidationMessageEnvelope createAssayDataValidationMessageEnvelope() {
@@ -130,7 +159,7 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
     }
 
     @Test
-    public void testExpandEnvelopeSameSubmissionByAccessionForProtocol() throws Exception {
+    public void testExpandEnvelopeSameSubmissionByAccessionForProtocol() {
         AssayDataValidationMessageEnvelope assayDataValidationMessageEnvelope = createAssayDataValidationMessageEnvelope();
         assayDataValidationMessageEnvelope.setSubmissionId(submission.getId());
         List<ProtocolUse> protocolUses = new ArrayList<>();
