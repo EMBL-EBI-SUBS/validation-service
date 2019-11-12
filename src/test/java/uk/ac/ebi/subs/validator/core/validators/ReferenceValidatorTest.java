@@ -19,9 +19,13 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ReferenceValidator.class)
@@ -78,6 +82,100 @@ public class ReferenceValidatorTest {
         Assert.assertEquals(SingleValidationResultStatus.Pass, result.getValidationStatus());
         Assert.assertEquals(EXPECTED_ID, result.getEntityUuid());
         Assert.assertNull(result.getMessage());
+    }
+
+    @Test
+    public void validateBySampleAliasWith2SampleRelationshipWithoutAccession() {
+
+        final List<Submittable> sampleList = createSamplesWithoutAccession(team, 2);
+
+        final List<AbstractSubsRef> sampleRefList = sampleList.stream().map(sample -> {
+            SampleRef sampleRef = new SampleRef();
+            sampleRef.setAlias(sample.getAlias());
+            sampleRef.setTeam(sample.getTeam().getName());
+            return sampleRef;
+        }).collect(Collectors.toList());
+
+
+        List<SingleValidationResult> validationResults =
+                referenceValidator.validate(entityUnderValidation,dataType, sampleRefList, sampleList);
+
+        validationResults.forEach( validationResult -> {
+            Assert.assertEquals(SingleValidationResultStatus.Pass, validationResult.getValidationStatus());
+            Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
+            Assert.assertNull(validationResult.getMessage());
+
+        });
+    }
+
+    @Test
+    public void validateBySampleAliasWith2SampleRelationshipWithSameAccession() {
+        String sameAccession = UUID.randomUUID().toString();
+        List<Submittable> sampleList = createSamples(team, 2);
+        sampleList = sampleList.stream().map(sample -> {
+            sample.setAccession(sameAccession);
+            return sample;
+        }).collect(Collectors.toList());
+
+        final List<AbstractSubsRef> sampleRefList = sampleList.stream().map(sample -> {
+            SampleRef sampleRef = new SampleRef();
+            sampleRef.setAccession(sample.getAccession());
+            return sampleRef;
+        }).collect(Collectors.toList());
+
+
+        List<SingleValidationResult> validationResults =
+                referenceValidator.validate(entityUnderValidation,dataType, sampleRefList, sampleList);
+
+        for (SingleValidationResult validationResult: validationResults) {
+            if (validationResult.getValidationStatus().equals(SingleValidationResultStatus.Error)) {
+                Assert.assertEquals(SingleValidationResultStatus.Error, validationResult.getValidationStatus());
+                Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
+                Assert.assertNotNull(validationResult.getMessage());
+                Assert.assertThat(validationResult.getMessage(),
+                        is(equalTo(String.format(ReferenceValidator.DUPLICATED_ACCESSION_MESSAGE, sameAccession))));
+                break;
+            }
+
+            Assert.fail("SingleValidationResult list should contain an ERROR result");
+        }
+    }
+
+    @Test
+    public void validateSampleWith2SampleRelationshipWithSameAliasAndTeamName() {
+        final String sameAlias = "same alias";
+        final String sameTeamName = "same team name";
+
+        List<Submittable> sampleList = createSamples(team, 2);
+        sampleList = sampleList.stream().map(sample -> {
+            sample.setAlias(sameAlias);
+            sample.getTeam().setName(sameTeamName);
+            return sample;
+        }).collect(Collectors.toList());
+
+        final List<AbstractSubsRef> sampleRefList = sampleList.stream().map(sample -> {
+            SampleRef sampleRef = new SampleRef();
+            sampleRef.setAlias(sample.getAlias());
+            sampleRef.setTeam(sample.getTeam().getName());
+            return sampleRef;
+        }).collect(Collectors.toList());
+
+
+        List<SingleValidationResult> validationResults =
+                referenceValidator.validate(entityUnderValidation,dataType, sampleRefList, sampleList);
+
+        for (SingleValidationResult validationResult: validationResults) {
+            if (validationResult.getValidationStatus().equals(SingleValidationResultStatus.Error)) {
+                Assert.assertEquals(SingleValidationResultStatus.Error, validationResult.getValidationStatus());
+                Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
+                Assert.assertNotNull(validationResult.getMessage());
+                Assert.assertThat(validationResult.getMessage(),
+                        is(equalTo(String.format(ReferenceValidator.DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE, sameAlias, sameTeamName))));
+                break;
+            }
+
+            Assert.fail("SingleValidationResult list should contain an ERROR result");
+        }
     }
 
     @Test
@@ -142,6 +240,21 @@ public class ReferenceValidatorTest {
             sampleList.add(createSample(team));
         }
         return sampleList;
+    }
+
+    static List<Submittable> createSamplesWithoutAccession (Team team, int sampleNumber) {
+        List<Submittable> sampleList = new ArrayList<>(sampleNumber);
+        for (int i = 0; i < sampleNumber; i++ ) {
+            sampleList.add(createSampleWithouAccession(team));
+        }
+        return sampleList;
+    }
+
+    static Submittable<Sample> createSampleWithouAccession(Team team) {
+        Submittable<Sample> sample = createSample(team);
+        sample.setAccession(null);
+
+        return sample;
     }
 
     static Submittable<Sample> createSample (Team team) {

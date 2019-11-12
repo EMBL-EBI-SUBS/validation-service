@@ -13,17 +13,20 @@ import uk.ac.ebi.subs.validator.model.Submittable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-
-import static uk.ac.ebi.subs.validator.core.validators.ValidatorHelper.getDefaultSingleValidationResult;
 
 @Service
 @RequiredArgsConstructor
 public class ReferenceValidator {
-    String FAIL_MESSAGE = "Could not find reference target: %s ";
-    String FAIL_TEAM_AND_ALIAS_MESSAGE = "Could not find reference for ALIAS: %s in TEAM: %s ";
+    static final String FAIL_MESSAGE = "Could not find reference target: %s ";
+    static final String FAIL_TEAM_AND_ALIAS_MESSAGE = "Could not find reference for ALIAS: %s in TEAM: %s ";
+    static final String DUPLICATED_ACCESSION_MESSAGE = "The sample with accession: %s were duplicated in the sample relationship";
+    static final String DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE = "The sample with alias: %s and team: %S were duplicated in the sample relationship";
 
     @NonNull
     private ReferenceRequirementsValidator referenceRequirementsValidator;
@@ -37,13 +40,21 @@ public class ReferenceValidator {
 
         List<SingleValidationResult> results = new ArrayList<>();
 
+        results.addAll(validateDuplicatedAccession(entityUnderValidation, referencedSubmittables));
+
+        results.addAll(validateDuplicatedAliasPlusTeamName(entityUnderValidation, referencedSubmittables));
+
         final Map<String, Submittable> sampleAccessionMap = referencedSubmittables.stream()
+                .filter(referencedSubmittable -> referencedSubmittable.getAccession() != null)
                 .collect(
-                        Collectors.toMap(Submittable::getAccession, sample -> sample)
+                        Collectors.toMap(Submittable::getAccession, sample -> sample,
+                                (sample1, sample2) -> sample1 )
                 );
         final Map<String, Submittable> sampleAliasMap = referencedSubmittables.stream()
+                .filter(referencedSubmittable -> referencedSubmittable.getAlias() != null && referencedSubmittable.getTeam().getName() != null)
                 .collect(
-                        Collectors.toMap(sample -> sample.getAlias() + sample.getTeam().getName(), sample -> sample)
+                        Collectors.toMap(sample -> sample.getAlias() + sample.getTeam().getName(), sample -> sample,
+                                (sample1, sample2) -> sample1 )
                 );
 
 
@@ -61,6 +72,70 @@ public class ReferenceValidator {
         }
 
         return results;
+    }
+
+    private List<SingleValidationResult> validateDuplicatedAliasPlusTeamName(
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
+            Collection<? extends Submittable> referencedSubmittables) {
+        List<SingleValidationResult> results = new ArrayList<>();
+        Set<? extends Submittable> submittablesWithDuplicateAliasPlusTeamName = checkDuplicateAliasPlusTeamName(referencedSubmittables);
+
+        if (!submittablesWithDuplicateAliasPlusTeamName.isEmpty()) {
+            results.addAll(
+                    submittablesWithDuplicateAliasPlusTeamName.stream()
+                            .map(submittable ->
+                                    generateSingleValidationResultForDuplication(
+                                            entityUnderValidation, DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE,
+                                            submittable.getAlias(), submittable.getTeam().getName()))
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return results;
+    }
+
+    private List<SingleValidationResult> validateDuplicatedAccession(uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
+                                             Collection<? extends Submittable> referencedSubmittables) {
+        List<SingleValidationResult> results = new ArrayList<>();
+        Set<? extends Submittable> submittablesWithDuplicatedAccession = checkDuplicateAccession(referencedSubmittables);
+
+        if (!submittablesWithDuplicatedAccession.isEmpty()) {
+            results.addAll(
+                    submittablesWithDuplicatedAccession.stream()
+                            .map(submittable ->
+                                    generateSingleValidationResultForDuplication(
+                                            entityUnderValidation, DUPLICATED_ACCESSION_MESSAGE, submittable.getAccession()))
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return results;
+    }
+
+    private Set<? extends Submittable> checkDuplicateAccession(Collection<? extends Submittable> referencedSubmittables) {
+        Set<String> allItems = new HashSet<>();
+        return referencedSubmittables.stream()
+                .filter(referencedSubmittable -> referencedSubmittable.getAccession() != null)
+                .filter(submittable -> !allItems.add(submittable.getAccession()))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<? extends Submittable> checkDuplicateAliasPlusTeamName(Collection<? extends Submittable> referencedSubmittables) {
+
+        Set<String> allItems = new HashSet<>();
+        return referencedSubmittables.stream()
+                .filter(submittable -> !allItems.add(submittable.getAlias() + submittable.getTeam().getName()))
+                .collect(Collectors.toSet());
+    }
+
+    private SingleValidationResult generateSingleValidationResultForDuplication(
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation, String validationMessage, String... messageParams) {
+
+        SingleValidationResult singleValidationResult = getDefaultSingleValidationResult(entityUnderValidation);
+        singleValidationResult.setMessage(String.format(validationMessage, messageParams));
+        singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
+
+        return singleValidationResult;
     }
 
     public List<SingleValidationResult> validate(
@@ -83,9 +158,7 @@ public class ReferenceValidator {
             AbstractSubsRef referenceToSubmittable,
             Submittable referencedSubmittable) {
 
-
-        SingleValidationResult singleValidationResult =
-                getDefaultSingleValidationResult(entityUnderValidation.getId(), ValidationAuthor.Core);
+        SingleValidationResult singleValidationResult = getDefaultSingleValidationResult(entityUnderValidation);
 
         if (referencedSubmittable == null) {
             if (referenceToSubmittable.getAccession() == null || referenceToSubmittable.getAccession().isEmpty()) {
@@ -111,5 +184,9 @@ public class ReferenceValidator {
         } else {
             return results;
         }
+    }
+
+    private SingleValidationResult getDefaultSingleValidationResult(uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation) {
+        return ValidatorHelper.getDefaultSingleValidationResult(entityUnderValidation.getId(), ValidationAuthor.Core);
     }
 }
