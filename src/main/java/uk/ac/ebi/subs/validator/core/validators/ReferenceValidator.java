@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.validator.model.Submittable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class ReferenceValidator {
                             .map(submittable ->
                                     generateSingleValidationResultForDuplication(
                                             entityUnderValidation, DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE,
-                                            submittable.getAlias(), submittable.getTeam().getName()))
+                                            Arrays.asList(submittable.getAlias(), submittable.getTeam().getName())))
                             .collect(Collectors.toList())
             );
         }
@@ -104,7 +105,8 @@ public class ReferenceValidator {
                     submittablesWithDuplicatedAccession.stream()
                             .map(submittable ->
                                     generateSingleValidationResultForDuplication(
-                                            entityUnderValidation, DUPLICATED_ACCESSION_MESSAGE, submittable.getAccession()))
+                                            entityUnderValidation, DUPLICATED_ACCESSION_MESSAGE,
+                                            Collections.singletonList(submittable.getAccession())))
                             .collect(Collectors.toList())
             );
         }
@@ -129,10 +131,10 @@ public class ReferenceValidator {
     }
 
     private SingleValidationResult generateSingleValidationResultForDuplication(
-            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation, String validationMessage, String... messageParams) {
+            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation, String validationMessage, List<String> messageParams) {
 
         SingleValidationResult singleValidationResult = getDefaultSingleValidationResult(entityUnderValidation);
-        singleValidationResult.setMessage(String.format(validationMessage, messageParams));
+        singleValidationResult.setMessage(String.format(validationMessage, messageParams.toArray()));
         singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
 
         return singleValidationResult;

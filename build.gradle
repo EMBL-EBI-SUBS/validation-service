@@ -21,8 +21,8 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'maven'
 apply plugin: 'org.hidetake.ssh'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 ext.gradle_env = hasProperty('env') ? env : 'dev'
 
@@ -62,7 +62,8 @@ dependencies {
         exclude group: "com.vaadin.external.google", module:"android-json"
     }
 
-    compileOnly("org.projectlombok:lombok:1.16.18")
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
 
 task('externalCiTest', type: Test) {
