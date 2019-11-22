@@ -98,7 +98,7 @@ public class ReferenceRequirementsValidator {
                 .collect(Collectors.toSet());
 
 
-        if (requiredValidationAuthors != null && !requiredValidationAuthors.isEmpty()) {
+        if (!requiredValidationAuthors.isEmpty()) {
             ValidationResult validationResult = pair.getSecond();
 
 

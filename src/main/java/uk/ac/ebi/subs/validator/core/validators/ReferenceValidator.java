@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Service
@@ -166,7 +165,7 @@ public class ReferenceValidator {
             if (referenceToSubmittable.getAccession() == null || referenceToSubmittable.getAccession().isEmpty()) {
                 singleValidationResult.setMessage(String.format(FAIL_TEAM_AND_ALIAS_MESSAGE, referenceToSubmittable.getAlias(), referenceToSubmittable.getTeam()));
             } else {
-                singleValidationResult.setMessage(String.format(FAIL_MESSAGE, referenceToSubmittable.getAccession()));
+                singleValidationResult.setMessage(String.format(FAIL_MESSAGE,  referenceToSubmittable.getAccession()));
             }
             singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
 
