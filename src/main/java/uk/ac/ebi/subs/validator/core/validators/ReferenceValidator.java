@@ -40,9 +40,7 @@ public class ReferenceValidator {
 
         List<SingleValidationResult> results = new ArrayList<>();
 
-        results.addAll(validateDuplicatedAccession(entityUnderValidation, referencedSubmittables));
-
-        results.addAll(validateDuplicatedAliasPlusTeamName(entityUnderValidation, referencedSubmittables));
+        referencedSubmittables = getUniqueReferencedSubmittables(referencedSubmittables);
 
         final Map<String, Submittable> sampleAccessionMap = referencedSubmittables.stream()
                 .filter(referencedSubmittable -> referencedSubmittable.getAccession() != null)
@@ -74,69 +72,30 @@ public class ReferenceValidator {
         return results;
     }
 
-    private List<SingleValidationResult> validateDuplicatedAliasPlusTeamName(
-            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
-            Collection<? extends Submittable> referencedSubmittables) {
-        List<SingleValidationResult> results = new ArrayList<>();
-        Set<? extends Submittable> submittablesWithDuplicateAliasPlusTeamName = checkDuplicateAliasPlusTeamName(referencedSubmittables);
+    private Collection<? extends Submittable> getUniqueReferencedSubmittables(Collection<? extends Submittable> referencedSubmittables) {
 
-        if (!submittablesWithDuplicateAliasPlusTeamName.isEmpty()) {
-            results.addAll(
-                    submittablesWithDuplicateAliasPlusTeamName.stream()
-                            .map(submittable ->
-                                    generateSingleValidationResultForDuplication(
-                                            entityUnderValidation, DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE,
-                                            Arrays.asList(submittable.getAlias(), submittable.getTeam().getName())))
-                            .collect(Collectors.toList())
-            );
+        final Set<? extends Submittable> uniqueSamplesByAccession = getUniqueSamplesByAccession(referencedSubmittables);
+        if (!uniqueSamplesByAccession.isEmpty()) {
+            referencedSubmittables = uniqueSamplesByAccession;
         }
-
-        return results;
+        return getUniqueSamplesByAliasPlusTeamName(referencedSubmittables);
     }
 
-    private List<SingleValidationResult> validateDuplicatedAccession(uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation,
-                                             Collection<? extends Submittable> referencedSubmittables) {
-        List<SingleValidationResult> results = new ArrayList<>();
-        Set<? extends Submittable> submittablesWithDuplicatedAccession = checkDuplicateAccession(referencedSubmittables);
+    private Set<? extends Submittable> getUniqueSamplesByAccession(Collection<? extends Submittable> referencedSubmittables) {
 
-        if (!submittablesWithDuplicatedAccession.isEmpty()) {
-            results.addAll(
-                    submittablesWithDuplicatedAccession.stream()
-                            .map(submittable ->
-                                    generateSingleValidationResultForDuplication(
-                                            entityUnderValidation, DUPLICATED_ACCESSION_MESSAGE,
-                                            Collections.singletonList(submittable.getAccession())))
-                            .collect(Collectors.toList())
-            );
-        }
-
-        return results;
-    }
-
-    private Set<? extends Submittable> checkDuplicateAccession(Collection<? extends Submittable> referencedSubmittables) {
         Set<String> allItems = new HashSet<>();
         return referencedSubmittables.stream()
                 .filter(referencedSubmittable -> referencedSubmittable.getAccession() != null)
-                .filter(submittable -> !allItems.add(submittable.getAccession()))
+                .filter(submittable -> allItems.add(submittable.getAccession()))
                 .collect(Collectors.toSet());
     }
 
-    private Set<? extends Submittable> checkDuplicateAliasPlusTeamName(Collection<? extends Submittable> referencedSubmittables) {
+    private Set<? extends Submittable> getUniqueSamplesByAliasPlusTeamName(Collection<? extends Submittable> referencedSubmittables) {
 
         Set<String> allItems = new HashSet<>();
         return referencedSubmittables.stream()
-                .filter(submittable -> !allItems.add(submittable.getAlias() + submittable.getTeam().getName()))
+                .filter(submittable -> allItems.add(submittable.getAlias() + submittable.getTeam().getName()))
                 .collect(Collectors.toSet());
-    }
-
-    private SingleValidationResult generateSingleValidationResultForDuplication(
-            uk.ac.ebi.subs.data.submittable.Submittable entityUnderValidation, String validationMessage, List<String> messageParams) {
-
-        SingleValidationResult singleValidationResult = getDefaultSingleValidationResult(entityUnderValidation);
-        singleValidationResult.setMessage(String.format(validationMessage, messageParams.toArray()));
-        singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
-
-        return singleValidationResult;
     }
 
     public List<SingleValidationResult> validate(
@@ -148,7 +107,7 @@ public class ReferenceValidator {
         return this.validate(
                 entityUnderValidation,
                 dataTypeOfEntityUnderValidation,
-                Arrays.asList(referenceToSubmittables),
+                Collections.singletonList(referenceToSubmittables),
                 referencedSubmittables
         );
     }
