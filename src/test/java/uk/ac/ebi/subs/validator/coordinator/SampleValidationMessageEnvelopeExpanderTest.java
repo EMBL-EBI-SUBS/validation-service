@@ -1,6 +1,5 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,11 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -35,7 +30,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -60,7 +55,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
     SampleValidationMessageEnvelopeExpander sampleValidatorMessageEnvelopeExpander;
 
     @MockBean
-    private RestTemplate restTemplate;
+    private SubmittableFinderService submittableFinderService;
 
     Team team;
     Submission submission;
@@ -82,8 +77,12 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
 
     @Test
-    public void testExpandEnvelopeSameSubmissionByAccession() {
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
+    public void testExpandEnvelopeSameSubmissionByAccession() throws Exception {
+        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope =
+                createSampleValidationMessageEnvelope(submission.getId());
+
+        Mockito.when(submittableFinderService.findSampleByAccession(anyString()))
+                .thenReturn(savedSampleList.get(0));
 
         for (Sample sample : savedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -92,14 +91,20 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         }
 
         sampleValidatorMessageEnvelopeExpander.expandEnvelope(sampleValidationMessageEnvelope);
-        final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = sampleValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
+        final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList =
+                sampleValidationMessageEnvelope.getSampleList().stream()
+                        .map(Submittable::getBaseSubmittable).collect(Collectors.toList());
         SampleAssertionHelper.assertSampleList(savedSampleList, sampleList);
     }
 
     @Test
-    public void testExpandEnvelopeSameSubmissionByAlias() {
+    public void testExpandEnvelopeSameSubmissionByAlias() throws Exception {
 
-        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
+        final SampleValidationMessageEnvelope sampleValidationMessageEnvelope =
+                createSampleValidationMessageEnvelope(submission.getId());
+
+        Mockito.when(submittableFinderService.findSampleByTeamNameAndAlias(any(SampleRelationship.class)))
+                .thenReturn(savedSampleList.get(0));
 
         for (Sample sample : savedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -109,7 +114,9 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         }
 
         sampleValidatorMessageEnvelopeExpander.expandEnvelope(sampleValidationMessageEnvelope);
-        final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList = sampleValidationMessageEnvelope.getSampleList().stream().map(Submittable::getBaseSubmittable).collect(Collectors.toList());
+        final List<uk.ac.ebi.subs.data.submittable.Sample> sampleList =
+                sampleValidationMessageEnvelope.getSampleList().stream()
+                        .map(Submittable::getBaseSubmittable).collect(Collectors.toList());
 
         SampleAssertionHelper.assertSampleList(savedSampleList, sampleList);
     }
@@ -126,9 +133,12 @@ public class SampleValidationMessageEnvelopeExpanderTest {
     }
 
     @Test
-    public void testExpandEnvelopeByAccessionNotInRepoAndNotInArchive() {
+    public void testExpandEnvelopeByAccessionNotInRepoAndNotInArchive() throws Exception {
         final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
         List<Sample> notSavedSampleList = MessageEnvelopeTestHelper.createSamples(submission, team, 1);
+
+        Mockito.when(submittableFinderService.findSampleByAccession(anyString()))
+                .thenReturn(null);
 
         for (Sample sample : notSavedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -146,10 +156,8 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         final SampleValidationMessageEnvelope sampleValidationMessageEnvelope = createSampleValidationMessageEnvelope(submission.getId());
         List<Sample> notSavedSampleList = MessageEnvelopeTestHelper.createSamples(submission, team, 1);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Mockito.when(restTemplate.getForEntity(anyString(), anyObject()))
-                .thenReturn(new ResponseEntity<>(objectMapper.writeValueAsString(notSavedSampleList.get(0)), HttpStatus.OK));
-
+        Mockito.when(submittableFinderService.findSampleByTeamNameAndAlias(any(SampleRelationship.class)))
+                .thenReturn(null);
 
         for (Sample sample : notSavedSampleList) {
             SampleRelationship sampleRelationship = new SampleRelationship();
@@ -169,8 +177,8 @@ public class SampleValidationMessageEnvelopeExpanderTest {
         Sample sampleInArchive = MessageEnvelopeTestHelper.createSamples(submission, team, 1).get(0);
         sampleInArchive.setAccession(UUID.randomUUID().toString());
 
-        Mockito.when(restTemplate.getForEntity(anyString(), anyObject()))
-                .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+        Mockito.when(submittableFinderService.findSampleByAccession(anyString()))
+                .thenReturn(null);
 
         SampleRelationship sampleRelationship = new SampleRelationship();
         sampleRelationship.setAccession(sampleInArchive.getAccession());
