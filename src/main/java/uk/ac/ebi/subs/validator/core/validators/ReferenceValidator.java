@@ -23,10 +23,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ReferenceValidator {
-    static final String FAIL_MESSAGE = "Could not find reference target: %s ";
-    static final String FAIL_TEAM_AND_ALIAS_MESSAGE = "Could not find reference for ALIAS: %s in TEAM: %s ";
-    static final String DUPLICATED_ACCESSION_MESSAGE = "The sample with accession: %s were duplicated in the sample relationship";
-    static final String DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE = "The sample with alias: %s and team: %S were duplicated in the sample relationship";
+    private static final String FAIL_MESSAGE = "Could not find reference target: %s ";
+    private static final String FAIL_TEAM_AND_ALIAS_MESSAGE = "Could not find reference for ALIAS: %s in TEAM: %s ";
 
     @NonNull
     private ReferenceRequirementsValidator referenceRequirementsValidator;
@@ -128,7 +126,7 @@ public class ReferenceValidator {
             }
             singleValidationResult.setValidationStatus(SingleValidationResultStatus.Error);
 
-            return Arrays.asList(singleValidationResult);
+            return Collections.singletonList(singleValidationResult);
         }
 
         List<SingleValidationResult> results = referenceRequirementsValidator.validate(
@@ -140,7 +138,7 @@ public class ReferenceValidator {
 
         if (results.isEmpty()) {
             singleValidationResult.setValidationStatus(SingleValidationResultStatus.Pass);
-            return Arrays.asList(singleValidationResult);
+            return Collections.singletonList(singleValidationResult);
         } else {
             return results;
         }
