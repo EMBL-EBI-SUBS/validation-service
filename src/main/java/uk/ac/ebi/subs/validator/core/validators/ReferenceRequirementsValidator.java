@@ -59,7 +59,7 @@ public class ReferenceRequirementsValidator {
 
 
         //bail out if there are no ref requirements for this ref type
-        if (!optionalRefRequirement.isPresent()) {
+        if (optionalRefRequirement.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -69,6 +69,17 @@ public class ReferenceRequirementsValidator {
 
 
         Pair<DataType, ValidationResult> pair = fetchDataTypeAndValidationResult(referencedEntity);
+
+        if (pair == null) {
+            Class submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable) referencedEntity).getBaseSubmittable().getClass();
+            String errorMessage = String.format("The referenced entity with id: %s (class: %s) is not exists in the data repository.",
+                    referencedEntity.getId(), submittableClass);
+            SingleValidationResult result = errorResult(entityUnderValidation, errorMessage);
+            results.add(result);
+
+            return results;
+        }
+
         DataType dataTypeOfReferencedEntity = pair.getFirst();
 
         if (!refRequirement.getDataTypeIdForReferencedDocument().equals(dataTypeOfReferencedEntity.getId())) {
@@ -98,7 +109,7 @@ public class ReferenceRequirementsValidator {
                 .collect(Collectors.toSet());
 
 
-        if (requiredValidationAuthors != null && !requiredValidationAuthors.isEmpty()) {
+        if (!requiredValidationAuthors.isEmpty()) {
             ValidationResult validationResult = pair.getSecond();
 
 

@@ -52,7 +52,9 @@ public class SubmittableHandler {
 
         if (dataTypeId != null) {
             DataType dataType = dataTypeRepository.findOne(dataTypeId);
-            validationAuthors.addAll(validationAuthorsForDataType(dataType));
+            if (dataType != null) {
+                validationAuthors.addAll(validationAuthorsForDataType(dataType));
+            }
         }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);

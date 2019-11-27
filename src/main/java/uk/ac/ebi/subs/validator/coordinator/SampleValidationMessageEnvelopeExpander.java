@@ -1,21 +1,23 @@
 package uk.ac.ebi.subs.validator.coordinator;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.repository.model.Sample;
-import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.List;
 
 @Service
+@Slf4j
+@AllArgsConstructor
 public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEnvelopeExpander<SampleValidationMessageEnvelope> {
-    SampleRepository sampleRepository;
 
-    public SampleValidationMessageEnvelopeExpander(SampleRepository sampleRepository) {
-        this.sampleRepository = sampleRepository;
-    }
+    @NonNull
+    private SubmittableFinderService submittableFinderService;
 
     @Override
     void expandEnvelope(SampleValidationMessageEnvelope validationMessageEnvelope) {
@@ -26,9 +28,9 @@ public class SampleValidationMessageEnvelopeExpander extends ValidationMessageEn
             Sample sample;
 
             if (sampleRelationship.getAccession() != null && !sampleRelationship.getAccession().isEmpty()) {
-                sample = sampleRepository.findByAccession(sampleRelationship.getAccession());
+                sample = submittableFinderService.findSampleByAccession(sampleRelationship.getAccession());
             } else {
-                sample = sampleRepository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(sampleRelationship.getTeam(), sampleRelationship.getAlias());
+                sample = submittableFinderService.findSampleByTeamNameAndAlias(sampleRelationship);
             }
 
             if (canAddSubmittable(validationMessageEnvelope, sample)) {

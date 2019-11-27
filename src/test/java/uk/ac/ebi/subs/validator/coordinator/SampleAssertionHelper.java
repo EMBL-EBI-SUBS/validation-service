@@ -5,6 +5,7 @@ import uk.ac.ebi.subs.repository.model.Sample;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class SampleAssertionHelper {
@@ -14,6 +15,7 @@ public class SampleAssertionHelper {
         for (Sample sample : savedSampleList) {
             uk.ac.ebi.subs.data.submittable.Sample sampleFromEnvelope =
                     getSampleFromEnvelope(sampleListFromEnvelope, sample.getId());
+            assertThat(sampleFromEnvelope, is(notNullValue()));
             assertThat(sample.getId(), is(sampleFromEnvelope.getId()));
             assertThat(sample.getAlias(), is(sampleFromEnvelope.getAlias()));
             assertThat(sample.getTeam(), is(sampleFromEnvelope.getTeam()));
