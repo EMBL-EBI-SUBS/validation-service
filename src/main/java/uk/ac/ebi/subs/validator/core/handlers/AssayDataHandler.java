@@ -38,7 +38,7 @@ public class AssayDataHandler extends AbstractHandler<AssayDataValidationMessage
     List<SingleValidationResult> validateSubmittable(AssayDataValidationMessageEnvelope envelope) {
         AssayData assayData = envelope.getEntityToValidate();
 
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = dataTypeRepository.findById(envelope.getDataTypeId()).orElse(null);
 
 
         return refValidator.validate(

@@ -41,7 +41,7 @@ public class StudyHandler extends AbstractHandler<StudyValidationMessageEnvelope
     public List<SingleValidationResult> validateSubmittable(StudyValidationMessageEnvelope envelope) {
         Study study = envelope.getEntityToValidate();
 
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = dataTypeRepository.findById(envelope.getDataTypeId()).orElse(null);
 
         List<SingleValidationResult> results = new ArrayList<>();
 

@@ -51,7 +51,7 @@ public class SubmittableHandler {
         Set<ValidationAuthor> validationAuthors = new HashSet<>();
 
         if (dataTypeId != null) {
-            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+            DataType dataType = (DataType) dataTypeRepository.findById(dataTypeId).orElse(null);
             if (dataType != null) {
                 validationAuthors.addAll(validationAuthorsForDataType(dataType));
             }
