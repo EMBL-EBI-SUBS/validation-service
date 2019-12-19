@@ -60,7 +60,7 @@ public class AggregatorValidationResultServiceTest {
         );
         assertTrue(service.updateValidationResult(singleValidationResultsEnvelope));
 
-        ValidationResult validationResult = repository.findOne(UUID_1);
+        ValidationResult validationResult = repository.findById(UUID_1).orElse(null);
         assertFalse(validationResult.getExpectedResults().get(ValidationAuthor.Biosamples).isEmpty());
     }
 

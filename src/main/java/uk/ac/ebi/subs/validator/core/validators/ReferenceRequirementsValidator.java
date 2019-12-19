@@ -117,7 +117,7 @@ public class ReferenceRequirementsValidator {
 
             while (waitingForResults(validationResult, requiredValidationAuthors, timeToGiveupWaitingForResults)) {
                 sleep();
-                validationResult = validationResultRepository.findOne(validationResult.getUuid());
+                validationResult = validationResultRepository.findById(validationResult.getUuid()).orElse(null);
             }
 
             for (ValidationAuthor author : requiredValidationAuthors) {
@@ -219,7 +219,7 @@ public class ReferenceRequirementsValidator {
         StoredSubmittable storedSubmittable = null;
 
         if (repo != null) {
-            storedSubmittable = repo.findOne(submittable.getId());
+            storedSubmittable = (StoredSubmittable) repo.findById(submittable.getId()).orElse(null);
         }
 
         if (storedSubmittable != null) {

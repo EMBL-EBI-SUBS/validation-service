@@ -157,7 +157,7 @@ public class MessageEnvelopeTestHelper {
 
     public static List<Protocol> createAndSaveProtocols(ProtocolRepository protocolRepository, Submission submission, Team team) {
         List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
-        return protocolRepository.save(protocols);
+        return protocolRepository.saveAll(protocols);
     }
 
     public static SampleValidationMessageEnvelope getSampleValidationEnvelope() {

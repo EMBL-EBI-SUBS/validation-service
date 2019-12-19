@@ -29,7 +29,7 @@ public class StatusFlipperValidationResultService {
     }
 
     public boolean updateValidationResult(AggregatorToFlipperEnvelope envelope) {
-        ValidationResult validationResult = repository.findOne(envelope.getValidationResultUuid());
+        ValidationResult validationResult = repository.findById(envelope.getValidationResultUuid()).orElse(null);
 
         if (validationResult != null) {
             if (validationResult.getVersion() == envelope.getValidationResultVersion()) {
