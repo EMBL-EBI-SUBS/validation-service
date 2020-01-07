@@ -45,7 +45,7 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
     
     @Override
     List<SingleValidationResult> validateSubmittable(AnalysisValidationEnvelope envelope) {
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = dataTypeRepository.findById(envelope.getDataTypeId()).orElse(null);
 
 
         List<SingleValidationResult> results = Stream.of(

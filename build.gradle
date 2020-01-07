@@ -3,35 +3,33 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.21.RELEASE")
-        classpath 'org.hidetake:gradle-ssh-plugin:1.1.3'
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.2.1.RELEASE")
     }
 }
 
 plugins {
     id 'com.sourcemuse.mongo' version '1.0.0'
+    id 'java-library'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'maven-publish'
+    id 'org.hidetake.ssh' version "2.10.1"
 }
 
 group 'uk.ac.ebi.subs'
 version '2.23.0-SNAPSHOT'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
-apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'maven'
-apply plugin: 'org.hidetake.ssh'
-
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-ext.gradle_env = hasProperty('env') ? env : 'dev'
-
-bootRepackage {
-    mainClass = "uk.ac.ebi.subs.ValidationServiceApplication"
+bootJar {
+    mainClassName = "uk.ac.ebi.subs.validator.taxon.TaxonomyValidatorApplication"
+    launchScript()
 }
 
 springBoot {
-    executable = true
     buildInfo()
 }
 
@@ -53,10 +51,10 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile("uk.ac.ebi.subs:subs-processing-model:2.12.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.30.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.31.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:validator-common:3.12.0-SNAPSHOT")
 
-    compile 'de.codecentric:spring-boot-admin-starter-client:1.5.7'
+    compile 'de.codecentric:spring-boot-admin-starter-client:2.1.6'
 
     compile("de.siegmar:logback-gelf:1.1.0")
     
@@ -99,6 +97,8 @@ def devDeployHostName = hasProperty(project.name + "DevDeployTarget") ? getPrope
 def testDeployHostName = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
 def prodDeployHostName = hasProperty(project.name + "ProdDeployTarget") ? getProperty(project.name + "ProdDeployTarget") : 'localhost'
 
+ext.gradle_env = hasProperty('env') ? env : 'dev'
+
 remotes {
     submission_dev {
         role('dev')
@@ -114,7 +114,7 @@ remotes {
     }
 }
 
-task deployJar(type: SshTask, dependsOn: 'assemble') {
+task deployJar(dependsOn: 'assemble') {
     doLast {
         def uploadJarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
         File jarDeployDir = new File("/data/$gradle_env/$project.name/jar",uploadJarFileName)

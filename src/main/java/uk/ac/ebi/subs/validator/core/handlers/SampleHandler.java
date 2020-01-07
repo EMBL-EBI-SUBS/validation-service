@@ -43,7 +43,7 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
     List<SingleValidationResult> validateSubmittable(SampleValidationMessageEnvelope envelope) {
         Sample sample = envelope.getEntityToValidate();
 
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = dataTypeRepository.findById(envelope.getDataTypeId()).orElse(null);
 
         List<SingleValidationResult> results = referenceValidator.validate(
                 sample,

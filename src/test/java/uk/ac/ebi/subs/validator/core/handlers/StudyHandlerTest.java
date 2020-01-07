@@ -21,6 +21,7 @@ import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static uk.ac.ebi.subs.validator.core.handlers.ValidationTestHelper.commonTestMethodForEntities;
@@ -139,7 +140,6 @@ public class StudyHandlerTest {
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findOne(dataTypeId))
-                .thenReturn(dataType);
+        when(dataTypeRepository.findById(dataTypeId)).thenReturn(Optional.of(dataType));
     }
 }

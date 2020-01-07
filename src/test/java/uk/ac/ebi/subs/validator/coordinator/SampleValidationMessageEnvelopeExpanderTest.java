@@ -34,7 +34,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
+@EnableMongoRepositories(basePackages = {"uk.ac.ebi.subs.repository.repos", "uk.ac.ebi.subs.validator.repository"})
 @EnableAutoConfiguration
 @SpringBootTest(classes = SampleValidationMessageEnvelopeExpander.class)
 @MockBeans({
@@ -70,7 +70,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
     @After
     public void finish() {
-        sampleRepository.delete(savedSampleList);
+        sampleRepository.deleteAll(savedSampleList);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
     }

@@ -68,10 +68,10 @@ public class JsonSchemaValidationHandler {
         Checklist checklist = null;
 
         if (envelope.getDataTypeId() != null) {
-            dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+            dataType = dataTypeRepository.findById(envelope.getDataTypeId()).orElse(null);
         }
         if (envelope.getChecklistId() != null) {
-            checklist = checklistRepository.findOne(envelope.getChecklistId());
+            checklist = checklistRepository.findById(envelope.getChecklistId()).orElse(null);
         }
 
         resolveMapperDifferences(envelope, dataType);

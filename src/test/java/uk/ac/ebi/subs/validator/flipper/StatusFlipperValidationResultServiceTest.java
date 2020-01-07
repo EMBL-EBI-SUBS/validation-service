@@ -66,7 +66,7 @@ public class StatusFlipperValidationResultServiceTest {
 
         service.updateValidationResult(envelope);
 
-        ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
+        ValidationResult actualValidationResultDocument = repository.findById(existingValidationResult.getUuid()).orElse(null);
 
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Pending, is(true));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Taxonomy).isEmpty(), is(false));
@@ -86,7 +86,7 @@ public class StatusFlipperValidationResultServiceTest {
 
         service.updateValidationResult(envelope);
 
-        ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
+        ValidationResult actualValidationResultDocument = repository.findById(existingValidationResult.getUuid()).orElse(null);
 
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Complete, is(true));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Taxonomy).isEmpty(), is(false));

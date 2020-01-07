@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -88,8 +89,8 @@ public class JsonSchemaValidationHandlerTest {
 
     @Test
     public void handleSampleValidation() {
-        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
-        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
+        Mockito.when(dataTypeRepository.findById(dataType.getId())).thenReturn(Optional.of(dataType));
+        Mockito.when(checklistRepository.findById(checklist.getId())).thenReturn(Optional.of(checklist));
 
 
         JsonNode expectedDtSchema = jsonStringToNode("{\"$schema\": \"foo\"}");
