@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
-import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 @Service

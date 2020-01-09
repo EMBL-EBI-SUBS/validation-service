@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -23,8 +22,9 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static uk.ac.ebi.subs.validator.core.handlers.ValidationTestHelper.commonTestMethodForEntities;
@@ -54,17 +54,14 @@ public class AssayHandlerTest {
     private final String dataTypeId = "dataTypeId";
     private DataType dataType;
 
-
     private AssayValidationMessageEnvelope envelope;
 
     private StudyRef studyRef;
     private SampleRef sampleRef;
     private Assay assay; //entity under validation
 
-
     private Submittable<Sample> wrappedSample;
     private Submittable<Study> wrappedStudy;
-
 
     @Before
     public void buildUp() {
@@ -83,7 +80,7 @@ public class AssayHandlerTest {
         assay = new Assay();
         assay.setId(assayId);
         assay.setStudyRef(studyRef);
-        assay.setSampleUses(Arrays.asList(
+        assay.setSampleUses(Collections.singletonList(
                 sampleUse
         ));
 
@@ -100,14 +97,13 @@ public class AssayHandlerTest {
 
         mockRepoCalls();
 
-
         //envelope
         envelope = new AssayValidationMessageEnvelope();
         envelope.setValidationResultUUID(validationResultId);
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(assay);
         envelope.setStudy(wrappedStudy);
-        envelope.setSampleList(Arrays.asList(wrappedSample));
+        envelope.setSampleList(Collections.singletonList(wrappedSample));
         envelope.setDataTypeId(dataTypeId);
     }
 
@@ -122,7 +118,6 @@ public class AssayHandlerTest {
         //there should be one result (even though the handler received two passes) and it should be a pass
         Assert.assertEquals(1, actualResults.size());
         Assert.assertEquals(SingleValidationResultStatus.Pass, actualResults.get(0).getValidationStatus());
-
     }
 
     @Test
@@ -170,18 +165,19 @@ public class AssayHandlerTest {
         when(
                 referenceValidator.validate(assay, dataType, studyRef, wrappedStudy)
         ).thenReturn(
-                Arrays.asList(studyResult)
+                Collections.singletonList(studyResult)
         );
 
         when(
-                referenceValidator.validate(assay, dataType, Arrays.asList(sampleRef), Arrays.asList(wrappedSample))
+                referenceValidator.validate(assay, dataType, Collections.singletonList(sampleRef),
+                        Collections.singletonList(wrappedSample))
         ).thenReturn(
-                Arrays.asList(sampleresult)
+                Collections.singletonList(sampleresult)
         );
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findOne(dataTypeId))
-                .thenReturn(dataType);
+        when(dataTypeRepository.findById(dataTypeId))
+                .thenReturn(Optional.ofNullable(dataType));
     }
 }

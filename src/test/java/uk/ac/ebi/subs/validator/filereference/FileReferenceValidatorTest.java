@@ -65,7 +65,7 @@ public class FileReferenceValidatorTest {
 
     @Before
     public void setup() {
-        Submission submission = submissionRepository.findOne(SUBMISSION_ID);
+        Submission submission = submissionRepository.findById(SUBMISSION_ID).orElse(null);
         uploadedFile1 = createFile(FILE_IDS[0], FILENAMES[0], TARGET_BASE_PATH);
         uploadedFile2 = createFile(FILE_IDS[1], FILENAMES[1], TARGET_BASE_PATH);
         final uk.ac.ebi.subs.data.component.File fileMetaData1 = createFileMetadata(FILENAMES[0], TARGET_BASE_PATH);
