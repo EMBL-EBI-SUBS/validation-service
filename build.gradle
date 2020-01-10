@@ -11,7 +11,6 @@ plugins {
     id 'java-library'
     id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id 'maven-publish'
     id 'org.hidetake.ssh' version "2.10.1"
     id "com.sourcemuse.mongo" version "1.0.7"
 }
