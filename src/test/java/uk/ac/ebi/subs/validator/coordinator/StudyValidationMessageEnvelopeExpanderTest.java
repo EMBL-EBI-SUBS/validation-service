@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
+@EnableMongoRepositories(basePackages = {"uk.ac.ebi.subs.repository.repos", "uk.ac.ebi.subs.validator.repository"})
 @EnableAutoConfiguration
 @SpringBootTest(classes = StudyValidationMessageEnvelopeExpander.class)
 public class StudyValidationMessageEnvelopeExpanderTest {
@@ -68,7 +68,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
         projectRepository.delete(savedProject);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
-        protocolRepository.delete(savedProtocols);
+        protocolRepository.deleteAll(savedProtocols);
     }
 
     @Test
@@ -127,6 +127,6 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     private List<Protocol> createAndSaveProtocols(Team team) {
         List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
-        return protocolRepository.save(protocols);
+        return protocolRepository.saveAll(protocols);
     }
 }

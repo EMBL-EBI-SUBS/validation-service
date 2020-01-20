@@ -2,13 +2,10 @@ package uk.ac.ebi.subs.validator.core.handlers;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.AnalysisRef;
 import uk.ac.ebi.subs.data.component.AssayDataRef;
 import uk.ac.ebi.subs.data.component.AssayRef;
-import uk.ac.ebi.subs.data.component.SampleRef;
-import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.submittable.Analysis;
 import uk.ac.ebi.subs.data.submittable.Assay;
@@ -18,20 +15,16 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
-import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope> {
 
     @NonNull
@@ -40,15 +33,18 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
     @Getter
     private AttributeValidator attributeValidator;
 
-    @NonNull
-    private DataTypeRepository dataTypeRepository;
-    
+    public AnalysisHandler(@NonNull ReferenceValidator refValidator, @NonNull AttributeValidator attributeValidator,
+                           DataTypeRepository dataTypeRepository) {
+        super(dataTypeRepository);
+        this.refValidator = refValidator;
+        this.attributeValidator = attributeValidator;
+    }
+
     @Override
     List<SingleValidationResult> validateSubmittable(AnalysisValidationEnvelope envelope) {
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = getDataTypeFromRepository(envelope.getDataTypeId());
 
-
-        List<SingleValidationResult> results = Stream.of(
+        return Stream.of(
                 studyRefValidation(envelope,dataType),
                 sampleRefValidation(envelope,dataType),
                 assayRefValidation(envelope,dataType),
@@ -56,10 +52,8 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
                 analysisRefValidation(envelope,dataType)
 
         )
-                .flatMap(l -> l.stream())
+                .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-
-        return results;
     }
 
     List<SingleValidationResult> studyRefValidation(AnalysisValidationEnvelope envelope,DataType dataType){
@@ -121,5 +115,4 @@ public class AnalysisHandler extends AbstractHandler<AnalysisValidationEnvelope>
                 analyses
         );
     }
-
 }

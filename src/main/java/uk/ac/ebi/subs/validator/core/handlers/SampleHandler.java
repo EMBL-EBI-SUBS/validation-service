@@ -2,24 +2,16 @@ package uk.ac.ebi.subs.validator.core.handlers;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.component.AbstractSubsRef;
-import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.core.validators.AttributeValidator;
 import uk.ac.ebi.subs.validator.core.validators.ReferenceValidator;
-import uk.ac.ebi.subs.validator.core.validators.ValidatorHelper;
 import uk.ac.ebi.subs.validator.data.SampleValidationMessageEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationMessageEnvelope;
-import uk.ac.ebi.subs.validator.model.Submittable;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * This class responsible for handle {@link Sample} validation.
@@ -28,7 +20,6 @@ import java.util.stream.Collectors;
  * using {@link  uk.ac.ebi.subs.data.component.SampleRelationship SampleRelationship}
  */
 @Service
-@RequiredArgsConstructor
 public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelope> {
 
     @NonNull private ReferenceValidator referenceValidator;
@@ -36,23 +27,24 @@ public class SampleHandler extends AbstractHandler<SampleValidationMessageEnvelo
     @NonNull @Getter
     private AttributeValidator attributeValidator;
 
-    @NonNull
-    private DataTypeRepository dataTypeRepository;
+    public SampleHandler(@NonNull ReferenceValidator referenceValidator, @NonNull AttributeValidator attributeValidator,
+                         DataTypeRepository dataTypeRepository) {
+        super(dataTypeRepository);
+        this.referenceValidator = referenceValidator;
+        this.attributeValidator = attributeValidator;
+    }
 
     @Override
     List<SingleValidationResult> validateSubmittable(SampleValidationMessageEnvelope envelope) {
         Sample sample = envelope.getEntityToValidate();
 
-        DataType dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        DataType dataType = getDataTypeFromRepository(envelope.getDataTypeId());
 
-        List<SingleValidationResult> results = referenceValidator.validate(
+        return referenceValidator.validate(
                 sample,
                 dataType,
                 sample.getSampleRelationships(),
                 envelope.getSampleList()
         );
-
-        return results;
     }
-
 }

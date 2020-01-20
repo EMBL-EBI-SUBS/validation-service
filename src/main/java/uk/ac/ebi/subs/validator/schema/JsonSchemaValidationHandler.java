@@ -12,20 +12,18 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
+import uk.ac.ebi.subs.validator.error.EntityNotFoundException;
 import uk.ac.ebi.subs.validator.schema.custom.SchemaObjectMapperProvider;
 import uk.ac.ebi.subs.validator.schema.model.JsonSchemaValidationError;
 import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static uk.ac.ebi.subs.repository.util.SchemaConverterFromMongo.fixStoredJson;
@@ -51,27 +49,22 @@ public class JsonSchemaValidationHandler {
 
     private ObjectMapper customObjectMapper = SchemaObjectMapperProvider.createCustomObjectMapper();
 
-
-    private Map<String, SubmittableRepository<? extends StoredSubmittable>> repositoryByClassSimpleName(Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap) {
-        Map<String, SubmittableRepository<? extends StoredSubmittable>> map = new HashMap<>();
-
-        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
-            String className = entry.getKey().getSimpleName();
-            map.put(className, entry.getValue());
-        }
-        return map;
-    }
-
     public SingleValidationResultsEnvelope handleSubmittableValidation(SchemaValidationMessageEnvelope envelope) {
 
         DataType dataType = null;
         Checklist checklist = null;
 
-        if (envelope.getDataTypeId() != null) {
-            dataType = dataTypeRepository.findOne(envelope.getDataTypeId());
+        final String dataTypeId = envelope.getDataTypeId();
+        if (dataTypeId != null) {
+            dataType = dataTypeRepository.findById(dataTypeId)
+                        .orElseThrow(() -> new EntityNotFoundException(
+                            String.format("Data type entity with ID: %s is not found in the database.", dataTypeId)));
         }
-        if (envelope.getChecklistId() != null) {
-            checklist = checklistRepository.findOne(envelope.getChecklistId());
+        final String checklistId = envelope.getChecklistId();
+        if (checklistId != null) {
+            checklist = checklistRepository.findById(checklistId)
+                        .orElseThrow(() -> new EntityNotFoundException(
+                            String.format("Checklist entity with ID: %s is not found in the database.", checklistId)));
         }
 
         resolveMapperDifferences(envelope, dataType);
@@ -115,7 +108,7 @@ public class JsonSchemaValidationHandler {
 
             if (optionalClass.isPresent()) {
 
-                StoredSubmittable submittable = null;
+                StoredSubmittable submittable;
                 try {
                     submittable = objectMapper.treeToValue(envelope.getEntityToValidate(), optionalClass.get());
                 } catch (JsonProcessingException e) {
@@ -130,7 +123,7 @@ public class JsonSchemaValidationHandler {
     private List<SingleValidationResult> getSingleValidationResults(SchemaValidationMessageEnvelope envelope, List<JsonSchemaValidationError> jsonSchemaValidationErrors) {
         List<SingleValidationResult> singleValidationResultList;
         if (jsonSchemaValidationErrors.isEmpty()) {
-            singleValidationResultList = Arrays.asList(generatePassingSingleValidationResult(envelope.entityId(), ValidationAuthor.JsonSchema));
+            singleValidationResultList = Collections.singletonList(generatePassingSingleValidationResult(envelope.entityId(), ValidationAuthor.JsonSchema));
         } else {
             singleValidationResultList = convertToSingleValidationResultList(jsonSchemaValidationErrors, envelope.entityId());
         }

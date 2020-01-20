@@ -20,10 +20,10 @@ public class SchemaValidationMessageEnvelope {
     public String entityId() {
         if (this.entityToValidate != null &&
                 this.entityToValidate.isObject() &&
-                ((ObjectNode) this.entityToValidate).has("id") &&
-                ((ObjectNode) this.entityToValidate).get("id").isTextual()
+                this.entityToValidate.has("id") &&
+                this.entityToValidate.get("id").isTextual()
                 ) {
-            return ((ObjectNode) entityToValidate).get("id").textValue();
+            return entityToValidate.get("id").textValue();
         }
         return null;
 

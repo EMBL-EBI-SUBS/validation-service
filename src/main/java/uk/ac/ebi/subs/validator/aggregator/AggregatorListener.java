@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.validator.data.AggregatorToFlipperEnvelope;
 import uk.ac.ebi.subs.validator.data.SingleValidationResultsEnvelope;
-import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.messaging.AggregatorQueues;
 import uk.ac.ebi.subs.validator.messaging.AggregatorRoutingKeys;
 
