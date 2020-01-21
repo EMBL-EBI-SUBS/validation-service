@@ -8,12 +8,11 @@ buildscript {
 }
 
 plugins {
-    id 'com.sourcemuse.mongo' version '1.0.0'
     id 'java-library'
     id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id 'maven-publish'
     id 'org.hidetake.ssh' version "2.10.1"
+    id "com.sourcemuse.mongo" version "1.0.7"
 }
 
 group 'uk.ac.ebi.subs'
@@ -23,6 +22,8 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
+
+ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 bootJar {
     mainClassName = "uk.ac.ebi.subs.validator.taxon.TaxonomyValidatorApplication"
@@ -34,7 +35,6 @@ springBoot {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
@@ -48,17 +48,17 @@ mongo {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter'
-    compile("uk.ac.ebi.subs:subs-processing-model:2.12.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.31.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:validator-common:3.12.0-SNAPSHOT")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("de.codecentric:spring-boot-admin-starter-client:2.1.6")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
-    compile 'de.codecentric:spring-boot-admin-starter-client:2.1.6'
+    implementation("uk.ac.ebi.subs:subs-processing-model:2.14.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-messaging:0.5.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-repository:2.31.0-SNAPSHOT")
 
-    compile("de.siegmar:logback-gelf:1.1.0")
+    implementation("de.siegmar:logback-gelf:1.1.0")
     
-    testCompile("org.springframework.boot:spring-boot-starter-test"){
+    testImplementation("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"
     }
 
@@ -96,8 +96,6 @@ if (project.hasProperty('sshPassphrase')) {
 def devDeployHostName = hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
 def testDeployHostName = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
 def prodDeployHostName = hasProperty(project.name + "ProdDeployTarget") ? getProperty(project.name + "ProdDeployTarget") : 'localhost'
-
-ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 remotes {
     submission_dev {

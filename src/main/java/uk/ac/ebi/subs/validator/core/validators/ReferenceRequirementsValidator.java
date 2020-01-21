@@ -16,6 +16,7 @@ import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
+import uk.ac.ebi.subs.validator.error.EntityNotFoundException;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class ReferenceRequirementsValidator {
     @NonNull
     private ValidationResultRepository validationResultRepository;
 
-    public List<SingleValidationResult> validate(Submittable entityUnderValidation, DataType dataType, AbstractSubsRef ref, Submittable referencedEntity) {
+    public List<SingleValidationResult> validate(Submittable entityUnderValidation, DataType dataType, AbstractSubsRef<?> ref, Submittable referencedEntity) {
 
         //bail out early if there are no ref requirements defined
         if (dataType.getRefRequirements() == null || dataType.getRefRequirements().isEmpty()) {
@@ -71,7 +72,7 @@ public class ReferenceRequirementsValidator {
         Pair<DataType, ValidationResult> pair = fetchDataTypeAndValidationResult(referencedEntity);
 
         if (pair == null) {
-            Class submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable) referencedEntity).getBaseSubmittable().getClass();
+            Class<?> submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable<?>) referencedEntity).getBaseSubmittable().getClass();
             String errorMessage = String.format("The referenced entity with id: %s (class: %s) is not exists in the data repository.",
                     referencedEntity.getId(), submittableClass);
             SingleValidationResult result = errorResult(entityUnderValidation, errorMessage);
@@ -117,7 +118,10 @@ public class ReferenceRequirementsValidator {
 
             while (waitingForResults(validationResult, requiredValidationAuthors, timeToGiveupWaitingForResults)) {
                 sleep();
-                validationResult = validationResultRepository.findById(validationResult.getUuid()).orElse(null);
+                final String validationResultUuid = validationResult.getUuid();
+                validationResult = validationResultRepository.findById(validationResultUuid)
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                String.format("Validation result entity with ID: %s is not found in the database.", validationResultUuid)));
             }
 
             for (ValidationAuthor author : requiredValidationAuthors) {
@@ -201,29 +205,28 @@ public class ReferenceRequirementsValidator {
 
     private Pair<DataType, ValidationResult> fetchDataTypeAndValidationResult(Submittable submittable) {
 
-        SubmittableRepository repo = null;
-        Class submittableClass = submittable.getClass();
+        SubmittableRepository<? extends StoredSubmittable> repo = null;
+        Class<?> submittableClass = submittable.getClass();
 
         if (submittable instanceof uk.ac.ebi.subs.validator.model.Submittable) {
-            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable) submittable).getBaseSubmittable().getClass();
+            submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable<?>) submittable).getBaseSubmittable().getClass();
         }
 
         for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
-            Class repositoryModelClass = entry.getKey();
+            Class<?> repositoryModelClass = entry.getKey();
 
             if (submittableClass.isAssignableFrom(repositoryModelClass)) {
                 repo = entry.getValue();
             }
         }
 
-        StoredSubmittable storedSubmittable = null;
-
         if (repo != null) {
-            storedSubmittable = (StoredSubmittable) repo.findById(submittable.getId()).orElse(null);
-        }
+            final Optional<? extends StoredSubmittable> optionalSubmittable = repo.findById(submittable.getId());
 
-        if (storedSubmittable != null) {
-            return Pair.of(storedSubmittable.getDataType(), storedSubmittable.getValidationResult());
+
+            return optionalSubmittable.map( storedSubmittable ->
+                Pair.of(storedSubmittable.getDataType(), storedSubmittable.getValidationResult())
+            ).orElse(null);
         }
 
         return null;

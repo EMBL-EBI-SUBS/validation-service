@@ -12,7 +12,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * This is a service to modify the {@code ValidationResult} status according to the entities validation result.
@@ -29,21 +29,21 @@ public class StatusFlipperValidationResultService {
     }
 
     public boolean updateValidationResult(AggregatorToFlipperEnvelope envelope) {
-        ValidationResult validationResult = repository.findById(envelope.getValidationResultUuid()).orElse(null);
+        Optional<ValidationResult> optionalValidationResult = repository.findById(envelope.getValidationResultUuid());
 
-        if (validationResult != null) {
+        return optionalValidationResult.map( validationResult -> {
             if (validationResult.getVersion() == envelope.getValidationResultVersion()) {
                 flipStatusIfRequired(validationResult);
                 return true;
             }
-        }
-        return false;
+            return false;
+        }).orElse(false);
     }
 
     private void flipStatusIfRequired(ValidationResult validationResult) {
         Map<ValidationAuthor, List<SingleValidationResult>> validationResults = validationResult.getExpectedResults();
 
-        if (validationResults.values().stream().filter(list -> list.isEmpty()).collect(Collectors.toList()).isEmpty()) {
+        if (validationResults.values().stream().noneMatch(List::isEmpty)) {
             validationResult.setValidationStatus(GlobalValidationStatus.Complete);
             repository.save(validationResult);
 

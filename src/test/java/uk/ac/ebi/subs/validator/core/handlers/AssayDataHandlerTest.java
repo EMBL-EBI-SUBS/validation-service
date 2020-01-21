@@ -24,7 +24,6 @@ import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
@@ -168,6 +167,7 @@ public class AssayDataHandlerTest {
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findById(dataTypeId)).thenReturn(Optional.of(dataType));
+        when(dataTypeRepository.findById(dataTypeId))
+                .thenReturn(java.util.Optional.ofNullable(dataType));
     }
 }

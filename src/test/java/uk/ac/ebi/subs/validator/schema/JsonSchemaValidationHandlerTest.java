@@ -8,8 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -24,12 +22,9 @@ import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-
 
 @RunWith(SpringRunner.class)
 //@SpringBootTest()
@@ -41,11 +36,9 @@ public class JsonSchemaValidationHandlerTest {
     DataTypeRepository dataTypeRepository;
     ChecklistRepository checklistRepository;
 
-
     SchemaValidationMessageEnvelope schemaValidationMessageEnvelope;
 
-
-    JsonSchemaValidationError error = new JsonSchemaValidationError(Arrays.asList("fake error message"), "/a/fake/path");
+    JsonSchemaValidationError error = new JsonSchemaValidationError(Collections.singletonList("fake error message"), "/a/fake/path");
     ObjectMapper objectMapper;
 
     DataType dataType;
@@ -81,47 +74,32 @@ public class JsonSchemaValidationHandlerTest {
                 objectMapper,
                 Collections.singletonList(Sample.class)
         );
-
-
-
     }
-
 
     @Test
     public void handleSampleValidation() {
-        Mockito.when(dataTypeRepository.findById(dataType.getId())).thenReturn(Optional.of(dataType));
-        Mockito.when(checklistRepository.findById(checklist.getId())).thenReturn(Optional.of(checklist));
-
+        Mockito.when(dataTypeRepository.findById(dataType.getId())).thenReturn(java.util.Optional.ofNullable(dataType));
+        Mockito.when(checklistRepository.findById(checklist.getId())).thenReturn(java.util.Optional.ofNullable(checklist));
 
         JsonNode expectedDtSchema = jsonStringToNode("{\"$schema\": \"foo\"}");
         JsonNode expectedClSchema = jsonStringToNode("{\"$schema\": \"bar\"}");
 
-
         Mockito.when(jsonSchemaValidationService.validate(Mockito.eq(expectedDtSchema), Mockito.any())).thenReturn(
-                Arrays.asList(
-                        error
-                )
+                Collections.singletonList(error)
         );
         Mockito.when(jsonSchemaValidationService.validate(Mockito.eq(expectedClSchema), Mockito.any())).thenReturn(
-                Arrays.asList(
-                        error
-                )
+                Collections.singletonList(error)
         );
 
-
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = jsonSchemaValidationHandler.handleSubmittableValidation(schemaValidationMessageEnvelope);
-
 
         Mockito.verify(jsonSchemaValidationService, Mockito.times(1)).validate(Mockito.eq(expectedDtSchema), Mockito.any());
 
         Mockito.verify(jsonSchemaValidationService, Mockito.times(1)).validate(Mockito.eq(expectedClSchema), Mockito.any());
 
-
         singleValidationResultsEnvelope.getSingleValidationResults();
 
-
         assertEquals(singleValidationResultsEnvelope.getSingleValidationResults().size(), 2);
-
     }
 
     private ObjectNode jsonStringToNode(String str) {
@@ -131,5 +109,4 @@ public class JsonSchemaValidationHandlerTest {
             throw new RuntimeException(e);
         }
     }
-
 }

@@ -16,13 +16,14 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -53,7 +54,7 @@ public class AggregatorValidationResultServiceTest {
     @Test
     public void updateValidationResultSuccessfully() {
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = new SingleValidationResultsEnvelope(
-                Arrays.asList(generateSingleValidationResult(entityUUID_1)),
+                Collections.singletonList(generateSingleValidationResult(entityUUID_1)),
                 1,
                 UUID_1,
                 ValidationAuthor.Biosamples
@@ -61,6 +62,7 @@ public class AggregatorValidationResultServiceTest {
         assertTrue(service.updateValidationResult(singleValidationResultsEnvelope));
 
         ValidationResult validationResult = repository.findById(UUID_1).orElse(null);
+        assertNotNull(validationResult);
         assertFalse(validationResult.getExpectedResults().get(ValidationAuthor.Biosamples).isEmpty());
     }
 
@@ -71,7 +73,7 @@ public class AggregatorValidationResultServiceTest {
     public void ignoreObsoleteSingleValidationResult() {
 
         SingleValidationResultsEnvelope singleValidationResultsEnvelope = new SingleValidationResultsEnvelope(
-                Arrays.asList(generateSingleValidationResult(entityUUID_2)),
+                Collections.singletonList(generateSingleValidationResult(entityUUID_2)),
                 1,
                 UUID_2,
                 ValidationAuthor.Biosamples

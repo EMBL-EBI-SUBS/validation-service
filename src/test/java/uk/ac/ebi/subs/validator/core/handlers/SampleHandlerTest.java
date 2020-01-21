@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
@@ -21,8 +20,8 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static uk.ac.ebi.subs.validator.core.handlers.ValidationTestHelper.commonTestMethodForEntities;
@@ -70,7 +69,7 @@ public class SampleHandlerTest {
         //entity to be validated
         sample = new Sample();
         sample.setId(sampleId);
-        sample.setSampleRelationships(Arrays.asList(sampleRelationship));
+        sample.setSampleRelationships(Collections.singletonList(sampleRelationship));
 
         //reference data for the envelope
         Sample referencedSample = new Sample();
@@ -88,7 +87,7 @@ public class SampleHandlerTest {
         envelope.setValidationResultUUID(validationResultId);
         envelope.setValidationResultVersion(validationVersion);
         envelope.setEntityToValidate(sample);
-        envelope.setSampleList(Arrays.asList(wrappedSample));
+        envelope.setSampleList(Collections.singletonList(wrappedSample));
         envelope.setDataTypeId(dataTypeId);
 
     }
@@ -140,7 +139,8 @@ public class SampleHandlerTest {
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findById(dataTypeId)).thenReturn(Optional.of(dataType));
+        when(dataTypeRepository.findById(dataTypeId))
+                .thenReturn(java.util.Optional.ofNullable(dataType));
     }
 
     private void mockValidatorCalls(SingleValidationResult... sampleResults) {
@@ -148,8 +148,8 @@ public class SampleHandlerTest {
                 referenceValidator.validate(
                         sample,
                         dataType,
-                        Arrays.asList(sampleRelationship),
-                        Arrays.asList(wrappedSample))
+                        Collections.singletonList(sampleRelationship),
+                        Collections.singletonList(wrappedSample))
         ).thenReturn(
                 Arrays.asList(sampleResults)
         );

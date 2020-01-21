@@ -19,8 +19,6 @@ import uk.ac.ebi.subs.data.submittable.Protocol;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.SampleGroup;
 import uk.ac.ebi.subs.data.submittable.Study;
-import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.validator.coordinator.messages.FileDeletedMessage;
 import uk.ac.ebi.subs.validator.coordinator.messages.StoredSubmittableDeleteMessage;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelopeToCoordinator;

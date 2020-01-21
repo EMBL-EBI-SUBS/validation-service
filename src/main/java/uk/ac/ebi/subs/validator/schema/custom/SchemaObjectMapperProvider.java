@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.validator.schema.custom;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import uk.ac.ebi.subs.validator.schema.custom.LocalDateCustomSerializer;
 
 import java.time.LocalDate;
 

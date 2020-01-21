@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
@@ -100,15 +99,15 @@ public class ReferenceRequirementsValidatorTest {
      */
     public void matching_dataType_and_validation_passes() {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
-        Collection<ValidationAuthor> passingAuthors = Arrays.asList(ValidationAuthor.Ena);
+        Collection<ValidationAuthor> passingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
         Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors,
-                        Collections.emptyList(), Collections.emptyList())));
+                .thenReturn(
+                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList()))
+                )
+        ;
 
-        List<SingleValidationResult> results =
-                this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
-
+        List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertTrue(results.isEmpty());
 
         Mockito.verify(studyRepository).findById(referencedEntity.getId());
@@ -121,11 +120,13 @@ public class ReferenceRequirementsValidatorTest {
      */
     public void wrong_dataType_fails() {
         String dataTypeId = expectedDataTypeOfReferencedEntity + "wrongen";
-        Collection<ValidationAuthor> passingAuthors = Arrays.asList(ValidationAuthor.Ena);
+        Collection<ValidationAuthor> passingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
         Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors,
-                        Collections.emptyList(), Collections.emptyList())));
+                .thenReturn(
+                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList()))
+                )
+        ;
 
         List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertFalse(results.isEmpty());
@@ -140,7 +141,7 @@ public class ReferenceRequirementsValidatorTest {
      */
     public void validator_copes_with_pending_validation() {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
-        Collection<ValidationAuthor> authors = Arrays.asList(ValidationAuthor.Ena);
+        Collection<ValidationAuthor> authors = Collections.singletonList(ValidationAuthor.Ena);
 
         uk.ac.ebi.subs.repository.model.Study storedStudyWithPendingResults = buildStoredStudy(
                 referencedEntity.getId(),
@@ -160,12 +161,15 @@ public class ReferenceRequirementsValidatorTest {
 
 
         Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(Optional.of(storedStudyWithPendingResults));
+                .thenReturn(
+                        java.util.Optional.of(storedStudyWithPendingResults)
+                )
+        ;
 
         Mockito.when(validationResultRepository.findById(storedStudyWithPendingResults.getValidationResult().getUuid()))
                 .thenReturn(
-                        Optional.of(storedStudyWithPendingResults.getValidationResult()), //pending results on first call
-                        Optional.of(storedStudyWithPassingResults.getValidationResult())  //passing results on second call
+                        java.util.Optional.of(storedStudyWithPendingResults.getValidationResult()), //pending results on first call
+                        java.util.Optional.of(storedStudyWithPassingResults.getValidationResult())  //passing results on second call
                 );
 
 
@@ -185,11 +189,13 @@ public class ReferenceRequirementsValidatorTest {
      */
     public void error_for_ValidationAuthor_fails() {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
-        Collection<ValidationAuthor> failingAuthors = Arrays.asList(ValidationAuthor.Ena);
+        Collection<ValidationAuthor> failingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
         Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, Collections.emptyList(),
-                        failingAuthors, Collections.emptyList())));
+                .thenReturn(
+                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, Collections.emptyList(), failingAuthors, Collections.emptyList()))
+                )
+        ;
 
         List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertFalse(results.isEmpty());
@@ -204,7 +210,7 @@ public class ReferenceRequirementsValidatorTest {
      */
     public void validator_errors_if_pending_for_too_long() {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
-        Collection<ValidationAuthor> authors = Arrays.asList(ValidationAuthor.Ena);
+        Collection<ValidationAuthor> authors = Collections.singletonList(ValidationAuthor.Ena);
 
         uk.ac.ebi.subs.repository.model.Study storedStudyWithPendingResults = buildStoredStudy(
                 referencedEntity.getId(),
@@ -214,15 +220,17 @@ public class ReferenceRequirementsValidatorTest {
                 authors //pending
         );
 
+        Mockito.when(studyRepository.findById(referencedEntity.getId()).orElse(null))
+                .thenReturn(
+                        storedStudyWithPendingResults
+                );
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(Optional.of(storedStudyWithPendingResults));
+        Mockito.when(validationResultRepository.findById(storedStudyWithPendingResults.getValidationResult().getUuid()).orElse(null))
+                .thenReturn(
+                        storedStudyWithPendingResults.getValidationResult()
+                );
 
-        Mockito.when(validationResultRepository.findById(storedStudyWithPendingResults.getValidationResult().getUuid()))
-                .thenReturn(Optional.of(storedStudyWithPendingResults.getValidationResult()));
-
-
-        List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
+        this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
     }
 
 
@@ -234,26 +242,16 @@ public class ReferenceRequirementsValidatorTest {
 
         ValidationResult vr = new ValidationResult();
         vr.setUuid("iamatestvr");
-        Map<ValidationAuthor, List<SingleValidationResult>> results = new HashMap();
+        Map<ValidationAuthor, List<SingleValidationResult>> results = new HashMap<>();
 
         for (ValidationAuthor a : passingAuthors) {
-            results.put(a,
-                    Arrays.asList(
-                            ValidationTestHelper.pass(id, a)
-                    )
-            );
+            results.put(a, Collections.singletonList(ValidationTestHelper.pass(id, a)));
         }
         for (ValidationAuthor a : failingAuthors) {
-            results.put(a,
-                    Arrays.asList(
-                            ValidationTestHelper.fail(id, a)
-                    )
-            );
+            results.put(a, Collections.singletonList(ValidationTestHelper.fail(id, a)));
         }
         for (ValidationAuthor a : pendingAuthors) {
-            results.put(a,
-                    Collections.emptyList()
-            );
+            results.put(a, Collections.emptyList());
         }
         vr.setExpectedResults(results);
         storedStudy.setValidationResult(vr);
