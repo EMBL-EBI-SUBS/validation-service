@@ -54,7 +54,8 @@ dependencies {
 
     implementation("uk.ac.ebi.subs:subs-processing-model:2.14.0-SNAPSHOT")
     implementation("uk.ac.ebi.subs:subs-messaging:0.5.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-repository:2.31.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-repository:2.32.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:validator-common:3.12.0-SNAPSHOT")
 
     implementation("de.siegmar:logback-gelf:1.1.0")
     
