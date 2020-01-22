@@ -30,3 +30,5 @@ out/
 
 !gradle-wrapper.jar
 !gradle-wrapper.properties
+
+LOG_HOME_IS_UNDEFINED/

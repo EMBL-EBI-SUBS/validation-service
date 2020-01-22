@@ -21,7 +21,6 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.AnalysisValidationEnvelope;
 import uk.ac.ebi.subs.validator.model.Submittable;
-import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.UUID;
 
