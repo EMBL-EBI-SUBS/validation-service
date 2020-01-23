@@ -72,8 +72,8 @@ public class AssayValidationMessageEnvelopeExpanderTest {
     @After
     public void finish() {
         studyRepository.delete(savedStudy);
-        sampleRepository.deleteAll(savedSampleList);
-        submissionRepository.deleteAll(Arrays.asList(submission, submission2));
+        sampleRepository.delete(savedSampleList);
+        submissionRepository.delete(Arrays.asList(submission, submission2));
         submissionStatusRepository.delete(submission.getSubmissionStatus());
     }
 

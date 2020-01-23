@@ -3,20 +3,22 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.2.1.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.21.RELEASE")
     }
 }
 
 plugins {
     id 'java-library'
-    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'org.springframework.boot' version '1.5.21.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'org.hidetake.ssh' version "2.10.1"
     id "com.sourcemuse.mongo" version "1.0.7"
+    id 'application'
 }
 
 group 'uk.ac.ebi.subs'
-version '2.23.0-SNAPSHOT'
+version '2.24.0-SNAPSHOT'
+mainClassName = 'uk.ac.ebi.subs.ValidationServiceApplication'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -25,13 +27,8 @@ java {
 
 ext.gradle_env = hasProperty('env') ? env : 'dev'
 
-bootJar {
-    mainClassName = "uk.ac.ebi.subs.validator.taxon.TaxonomyValidatorApplication"
-    launchScript()
-}
-
 springBoot {
-    buildInfo()
+    executable = true
 }
 
 repositories {
@@ -49,15 +46,17 @@ mongo {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("de.codecentric:spring-boot-admin-starter-client:2.1.6")
+    implementation("de.codecentric:spring-boot-admin-starter-client:1.5.7")
     implementation("org.springframework.boot:spring-boot-starter-amqp")
 
-    implementation("uk.ac.ebi.subs:subs-processing-model:2.14.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-messaging:0.5.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-repository:2.32.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:validator-common:3.12.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:subs-repository:2.33.1-SNAPSHOT")
+    implementation("uk.ac.ebi.subs:validator-common:3.14.0-SNAPSHOT")
 
     implementation("de.siegmar:logback-gelf:1.1.0")
+
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.11")
     
     testImplementation("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"

@@ -139,8 +139,8 @@ public class SampleHandlerTest {
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findById(dataTypeId))
-                .thenReturn(java.util.Optional.ofNullable(dataType));
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
     }
 
     private void mockValidatorCalls(SingleValidationResult... sampleResults) {

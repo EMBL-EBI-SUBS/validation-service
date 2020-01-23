@@ -56,13 +56,13 @@ public class JsonSchemaValidationHandler {
 
         final String dataTypeId = envelope.getDataTypeId();
         if (dataTypeId != null) {
-            dataType = dataTypeRepository.findById(dataTypeId)
+            dataType = Optional.ofNullable(dataTypeRepository.findOne(dataTypeId))
                         .orElseThrow(() -> new EntityNotFoundException(
                             String.format("Data type entity with ID: %s is not found in the database.", dataTypeId)));
         }
         final String checklistId = envelope.getChecklistId();
         if (checklistId != null) {
-            checklist = checklistRepository.findById(checklistId)
+            checklist = Optional.ofNullable(checklistRepository.findOne(checklistId))
                         .orElseThrow(() -> new EntityNotFoundException(
                             String.format("Checklist entity with ID: %s is not found in the database.", checklistId)));
         }

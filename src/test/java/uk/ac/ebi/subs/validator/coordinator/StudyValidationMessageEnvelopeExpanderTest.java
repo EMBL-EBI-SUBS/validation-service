@@ -68,7 +68,7 @@ public class StudyValidationMessageEnvelopeExpanderTest {
         projectRepository.delete(savedProject);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
-        protocolRepository.deleteAll(savedProtocols);
+        protocolRepository.delete(savedProtocols);
     }
 
     @Test
@@ -127,6 +127,6 @@ public class StudyValidationMessageEnvelopeExpanderTest {
 
     private List<Protocol> createAndSaveProtocols(Team team) {
         List<Protocol> protocols = MessageEnvelopeTestHelper.createProtocols(submission, team, 3);
-        return protocolRepository.saveAll(protocols);
+        return protocolRepository.save(protocols);
     }
 }

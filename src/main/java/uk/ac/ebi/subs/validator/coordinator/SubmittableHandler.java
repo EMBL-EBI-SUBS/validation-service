@@ -51,10 +51,10 @@ public class SubmittableHandler {
         Set<ValidationAuthor> validationAuthors = new HashSet<>();
 
         if (dataTypeId != null) {
-            Optional<DataType> optionalDataType = dataTypeRepository.findById(dataTypeId);
-            optionalDataType.ifPresent( dataType ->
-                validationAuthors.addAll(validationAuthorsForDataType(dataType))
-            );
+            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+            if (dataType != null) {
+                validationAuthors.addAll(validationAuthorsForDataType(dataType));
+            }
         }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);

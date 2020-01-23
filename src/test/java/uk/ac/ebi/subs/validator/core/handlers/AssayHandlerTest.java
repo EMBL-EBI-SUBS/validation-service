@@ -177,7 +177,7 @@ public class AssayHandlerTest {
     }
 
     private void mockRepoCalls() {
-        when(dataTypeRepository.findById(dataTypeId))
-                .thenReturn(Optional.ofNullable(dataType));
+        when(dataTypeRepository.findOne(dataTypeId))
+                .thenReturn(dataType);
     }
 }

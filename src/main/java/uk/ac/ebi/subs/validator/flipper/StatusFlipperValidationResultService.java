@@ -29,7 +29,7 @@ public class StatusFlipperValidationResultService {
     }
 
     public boolean updateValidationResult(AggregatorToFlipperEnvelope envelope) {
-        Optional<ValidationResult> optionalValidationResult = repository.findById(envelope.getValidationResultUuid());
+        Optional<ValidationResult> optionalValidationResult = Optional.ofNullable(repository.findOne(envelope.getValidationResultUuid()));
 
         return optionalValidationResult.map( validationResult -> {
             if (validationResult.getVersion() == envelope.getValidationResultVersion()) {

@@ -84,7 +84,7 @@ public class AssayDataValidationMessageEnvelopeExpanderTest {
         sampleRepository.delete(savedSample);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
-        protocolRepository.deleteAll(savedProtocols);
+        protocolRepository.delete(savedProtocols);
     }
 
     @Test

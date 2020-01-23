@@ -78,8 +78,8 @@ public class JsonSchemaValidationHandlerTest {
 
     @Test
     public void handleSampleValidation() {
-        Mockito.when(dataTypeRepository.findById(dataType.getId())).thenReturn(java.util.Optional.ofNullable(dataType));
-        Mockito.when(checklistRepository.findById(checklist.getId())).thenReturn(java.util.Optional.ofNullable(checklist));
+        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
+        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
 
         JsonNode expectedDtSchema = jsonStringToNode("{\"$schema\": \"foo\"}");
         JsonNode expectedClSchema = jsonStringToNode("{\"$schema\": \"bar\"}");
