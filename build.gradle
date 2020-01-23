@@ -28,6 +28,7 @@ java {
 ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 springBoot {
+    buildInfo()
     executable = true
 }
 
