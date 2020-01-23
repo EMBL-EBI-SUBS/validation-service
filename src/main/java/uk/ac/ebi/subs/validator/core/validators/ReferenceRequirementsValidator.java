@@ -119,7 +119,7 @@ public class ReferenceRequirementsValidator {
             while (waitingForResults(validationResult, requiredValidationAuthors, timeToGiveupWaitingForResults)) {
                 sleep();
                 final String validationResultUuid = validationResult.getUuid();
-                validationResult = validationResultRepository.findById(validationResultUuid)
+                validationResult = Optional.ofNullable(validationResultRepository.findOne(validationResultUuid))
                         .orElseThrow(() -> new EntityNotFoundException(
                                 String.format("Validation result entity with ID: %s is not found in the database.", validationResultUuid)));
             }
@@ -221,7 +221,7 @@ public class ReferenceRequirementsValidator {
         }
 
         if (repo != null) {
-            final Optional<? extends StoredSubmittable> optionalSubmittable = repo.findById(submittable.getId());
+            final Optional<? extends StoredSubmittable> optionalSubmittable = Optional.ofNullable(repo.findOne(submittable.getId()));
 
 
             return optionalSubmittable.map( storedSubmittable ->

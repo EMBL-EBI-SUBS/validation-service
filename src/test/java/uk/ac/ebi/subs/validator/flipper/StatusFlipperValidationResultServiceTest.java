@@ -67,7 +67,7 @@ public class StatusFlipperValidationResultServiceTest {
 
         service.updateValidationResult(envelope);
 
-        ValidationResult actualValidationResultDocument = repository.findById(existingValidationResult.getUuid()).orElse(null);
+        ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
 
         assertNotNull(actualValidationResultDocument);
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Pending, is(true));
@@ -88,7 +88,7 @@ public class StatusFlipperValidationResultServiceTest {
 
         service.updateValidationResult(envelope);
 
-        ValidationResult actualValidationResultDocument = repository.findById(existingValidationResult.getUuid()).orElse(null);
+        ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
 
         assertNotNull(actualValidationResultDocument);
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Complete, is(true));

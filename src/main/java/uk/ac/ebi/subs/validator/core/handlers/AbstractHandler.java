@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class AbstractHandler<T extends ValidationMessageEnvelope<?>> {
@@ -50,8 +51,7 @@ public abstract class AbstractHandler<T extends ValidationMessageEnvelope<?>> {
     }
 
     DataType getDataTypeFromRepository(String dataTypeId) {
-        return dataTypeRepository
-                .findById(dataTypeId)
+        return Optional.ofNullable(dataTypeRepository.findOne(dataTypeId))
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("DataType entity with ID: %s is not found in the database.", dataTypeId)));
     }

@@ -101,16 +101,16 @@ public class ReferenceRequirementsValidatorTest {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
         Collection<ValidationAuthor> passingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()))
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
                 .thenReturn(
-                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList()))
+                        buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList())
                 )
         ;
 
         List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertTrue(results.isEmpty());
 
-        Mockito.verify(studyRepository).findById(referencedEntity.getId());
+        Mockito.verify(studyRepository).findOne(referencedEntity.getId());
     }
 
     @Test
@@ -122,9 +122,9 @@ public class ReferenceRequirementsValidatorTest {
         String dataTypeId = expectedDataTypeOfReferencedEntity + "wrongen";
         Collection<ValidationAuthor> passingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()))
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
                 .thenReturn(
-                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList()))
+                        buildStoredStudy(referencedEntity.getId(), dataTypeId, passingAuthors, Collections.emptyList(), Collections.emptyList())
                 )
         ;
 
@@ -132,7 +132,7 @@ public class ReferenceRequirementsValidatorTest {
         Assert.assertFalse(results.isEmpty());
         Assert.assertEquals(SingleValidationResultStatus.Error, results.get(0).getValidationStatus());
 
-        Mockito.verify(studyRepository).findById(referencedEntity.getId());
+        Mockito.verify(studyRepository).findOne(referencedEntity.getId());
     }
 
     @Test
@@ -160,26 +160,24 @@ public class ReferenceRequirementsValidatorTest {
         );
 
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()))
-                .thenReturn(
-                        java.util.Optional.of(storedStudyWithPendingResults)
-                )
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
+                .thenReturn(storedStudyWithPendingResults)
         ;
 
-        Mockito.when(validationResultRepository.findById(storedStudyWithPendingResults.getValidationResult().getUuid()))
+        Mockito.when(validationResultRepository.findOne(storedStudyWithPendingResults.getValidationResult().getUuid()))
                 .thenReturn(
-                        java.util.Optional.of(storedStudyWithPendingResults.getValidationResult()), //pending results on first call
-                        java.util.Optional.of(storedStudyWithPassingResults.getValidationResult())  //passing results on second call
+                        storedStudyWithPendingResults.getValidationResult(), //pending results on first call
+                        storedStudyWithPassingResults.getValidationResult()  //passing results on second call
                 );
 
 
         List<SingleValidationResult> results = this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
         Assert.assertTrue(results.isEmpty());
 
-        Mockito.verify(studyRepository).findById(referencedEntity.getId());
+        Mockito.verify(studyRepository).findOne(referencedEntity.getId());
 
         Mockito.verify(validationResultRepository, Mockito.times(2))
-                .findById(storedStudyWithPendingResults.getValidationResult().getUuid());
+                .findOne(storedStudyWithPendingResults.getValidationResult().getUuid());
     }
 
     @Test
@@ -191,9 +189,9 @@ public class ReferenceRequirementsValidatorTest {
         String dataTypeId = expectedDataTypeOfReferencedEntity;
         Collection<ValidationAuthor> failingAuthors = Collections.singletonList(ValidationAuthor.Ena);
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()))
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
                 .thenReturn(
-                        java.util.Optional.of(buildStoredStudy(referencedEntity.getId(), dataTypeId, Collections.emptyList(), failingAuthors, Collections.emptyList()))
+                        buildStoredStudy(referencedEntity.getId(), dataTypeId, Collections.emptyList(), failingAuthors, Collections.emptyList())
                 )
         ;
 
@@ -201,7 +199,7 @@ public class ReferenceRequirementsValidatorTest {
         Assert.assertFalse(results.isEmpty());
         Assert.assertEquals(SingleValidationResultStatus.Error, results.get(0).getValidationStatus());
 
-        Mockito.verify(studyRepository).findById(referencedEntity.getId());
+        Mockito.verify(studyRepository).findOne(referencedEntity.getId());
     }
 
     @Test(expected = RuntimeException.class)
@@ -220,12 +218,12 @@ public class ReferenceRequirementsValidatorTest {
                 authors //pending
         );
 
-        Mockito.when(studyRepository.findById(referencedEntity.getId()).orElse(null))
+        Mockito.when(studyRepository.findOne(referencedEntity.getId()))
                 .thenReturn(
                         storedStudyWithPendingResults
                 );
 
-        Mockito.when(validationResultRepository.findById(storedStudyWithPendingResults.getValidationResult().getUuid()).orElse(null))
+        Mockito.when(validationResultRepository.findOne(storedStudyWithPendingResults.getValidationResult().getUuid()))
                 .thenReturn(
                         storedStudyWithPendingResults.getValidationResult()
                 );

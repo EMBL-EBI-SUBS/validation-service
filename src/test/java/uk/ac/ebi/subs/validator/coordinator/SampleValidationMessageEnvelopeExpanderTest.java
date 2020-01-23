@@ -72,7 +72,7 @@ public class SampleValidationMessageEnvelopeExpanderTest {
 
     @After
     public void finish() {
-        sampleRepository.deleteAll(savedSampleList);
+        sampleRepository.delete(savedSampleList);
         submissionRepository.delete(submission);
         submissionStatusRepository.delete(submission.getSubmissionStatus());
     }
