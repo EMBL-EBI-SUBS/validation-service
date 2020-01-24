@@ -18,7 +18,12 @@ plugins {
 
 group 'uk.ac.ebi.subs'
 version '2.25.0-SNAPSHOT'
+
 mainClassName = 'uk.ac.ebi.subs.ValidationServiceApplication'
+
+//bootRepackage {
+//    mainClass = "uk.ac.ebi.subs.ValidationServiceApplication"
+//}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -28,8 +33,8 @@ java {
 ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 springBoot {
-    buildInfo()
     executable = true
+    buildInfo()
 }
 
 repositories {
@@ -46,18 +51,18 @@ mongo {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("de.codecentric:spring-boot-admin-starter-client:1.5.7")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("de.codecentric:spring-boot-admin-starter-client:1.5.7")
+    compile("org.springframework.boot:spring-boot-starter-amqp")
 
-    implementation("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:validator-common:3.14.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT")
+    compile("uk.ac.ebi.subs:validator-common:3.14.0-SNAPSHOT")
 
-    implementation("de.siegmar:logback-gelf:1.1.0")
+    compile("de.siegmar:logback-gelf:1.1.0")
 
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.11")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.11")
     
     testImplementation("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"
