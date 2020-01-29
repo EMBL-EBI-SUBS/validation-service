@@ -3,7 +3,10 @@ package uk.ac.ebi.subs.validator.coordinator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import uk.ac.ebi.subs.data.component.*;
+import uk.ac.ebi.subs.data.component.Attribute;
+import uk.ac.ebi.subs.data.component.ProtocolRef;
+import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.repository.model.Protocol;
@@ -25,7 +28,13 @@ import uk.ac.ebi.subs.validator.schema.model.SchemaValidationMessageEnvelope;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class MessageEnvelopeTestHelper {
 

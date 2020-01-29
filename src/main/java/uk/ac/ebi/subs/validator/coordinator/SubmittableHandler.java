@@ -38,9 +38,9 @@ public class SubmittableHandler {
     private ValidationEnvelopeFactory validationEnvelopeFactory;
 
     /**
-     * @param submittable
-     * @param submissionId
-     * @param dataTypeId
+     * @param submittable the submittable entity to handle
+     * @param submissionId the ID of the submission the submittable belongs to
+     * @param dataTypeId the ID of the data type of the submittable entity
      * @return true if it could create a {@link ValidationMessageEnvelope} with the {@link Project} entity and
      * the UUID of the {@link ValidationResult}
      */
@@ -52,7 +52,9 @@ public class SubmittableHandler {
 
         if (dataTypeId != null) {
             DataType dataType = dataTypeRepository.findOne(dataTypeId);
-            validationAuthors.addAll(validationAuthorsForDataType(dataType));
+            if (dataType != null) {
+                validationAuthors.addAll(validationAuthorsForDataType(dataType));
+            }
         }
 
         Optional<ValidationResult> validationResult = coordinatorValidationResultService.fetchValidationResultDocument(submittable, validationAuthors);
@@ -64,7 +66,7 @@ public class SubmittableHandler {
         return validationResult.isPresent() && validationResult.get().getEntityUuid() != null;
     }
 
-    private void triggerValidationEvents(Submittable submittable, Set<ValidationAuthor> authors, ValidationMessageEnvelope envelope) {
+    private void triggerValidationEvents(Submittable submittable, Set<ValidationAuthor> authors, ValidationMessageEnvelope<?> envelope) {
         String className = submittable.getClass().getSimpleName();
 
         for (ValidationAuthor author : authors) {
@@ -86,6 +88,4 @@ public class SubmittableHandler {
 
         return authors;
     }
-
-
 }

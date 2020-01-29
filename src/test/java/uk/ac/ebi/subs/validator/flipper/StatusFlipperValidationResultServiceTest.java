@@ -16,12 +16,13 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -61,13 +62,14 @@ public class StatusFlipperValidationResultServiceTest {
     public void notAllEntityHasBeenValidatedShouldLeaveValidationStatusPending() {
         assertThat(existingValidationResult.getValidationStatus() == GlobalValidationStatus.Pending, is(true));
 
-        existingValidationResult.getExpectedResults().put(ValidationAuthor.Taxonomy, Arrays.asList(new SingleValidationResult()));
+        existingValidationResult.getExpectedResults().put(ValidationAuthor.Taxonomy, Collections.singletonList(new SingleValidationResult()));
         repository.save(existingValidationResult);
 
         service.updateValidationResult(envelope);
 
         ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
 
+        assertNotNull(actualValidationResultDocument);
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Pending, is(true));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Taxonomy).isEmpty(), is(false));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Biosamples), is(new ArrayList<>()));
@@ -79,15 +81,16 @@ public class StatusFlipperValidationResultServiceTest {
     public void allEntityHasBeenValidatedShouldChangeValidationStatusToComplete() {
         assertThat(existingValidationResult.getValidationStatus() == GlobalValidationStatus.Pending, is(true));
 
-        existingValidationResult.getExpectedResults().put(ValidationAuthor.Taxonomy, Arrays.asList(new SingleValidationResult()));
-        existingValidationResult.getExpectedResults().put(ValidationAuthor.Biosamples, Arrays.asList(new SingleValidationResult()));
-        existingValidationResult.getExpectedResults().put(ValidationAuthor.Ena, Arrays.asList(new SingleValidationResult()));
+        existingValidationResult.getExpectedResults().put(ValidationAuthor.Taxonomy, Collections.singletonList(new SingleValidationResult()));
+        existingValidationResult.getExpectedResults().put(ValidationAuthor.Biosamples, Collections.singletonList(new SingleValidationResult()));
+        existingValidationResult.getExpectedResults().put(ValidationAuthor.Ena, Collections.singletonList(new SingleValidationResult()));
         repository.save(existingValidationResult);
 
         service.updateValidationResult(envelope);
 
         ValidationResult actualValidationResultDocument = repository.findOne(existingValidationResult.getUuid());
 
+        assertNotNull(actualValidationResultDocument);
         assertThat(actualValidationResultDocument.getValidationStatus() == GlobalValidationStatus.Complete, is(true));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Taxonomy).isEmpty(), is(false));
         assertThat(actualValidationResultDocument.getExpectedResults().get(ValidationAuthor.Biosamples).isEmpty(), is(false));

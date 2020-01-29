@@ -76,7 +76,8 @@ public class FileReferenceValidatorListener {
 
     private void sendResults(SingleValidationResultsEnvelope envelope) {
         List<SingleValidationResult> errorResults = envelope.getSingleValidationResults().stream()
-                .filter(svr -> svr.getValidationStatus().equals(SingleValidationResultStatus.Error)).collect(Collectors.toList());
+                .filter(svr -> svr.getValidationStatus().equals(SingleValidationResultStatus.Error))
+                .collect(Collectors.toList());
         if (errorResults.size() > 0) {
             rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, EVENT_VALIDATION_ERROR, envelope);
         } else {

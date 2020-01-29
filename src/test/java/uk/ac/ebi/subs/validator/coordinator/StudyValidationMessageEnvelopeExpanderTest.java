@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
+@EnableMongoRepositories(basePackages = {"uk.ac.ebi.subs.repository.repos", "uk.ac.ebi.subs.validator.repository"})
 @EnableAutoConfiguration
 @SpringBootTest(classes = StudyValidationMessageEnvelopeExpander.class)
 public class StudyValidationMessageEnvelopeExpanderTest {

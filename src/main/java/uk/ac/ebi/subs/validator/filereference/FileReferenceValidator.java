@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -80,15 +81,8 @@ public class FileReferenceValidator {
         final List<uk.ac.ebi.subs.repository.model.AssayData> assayDataList =
                 assayDataRepository.findBySubmissionId(submissionID);
 
-        if (assayDataList.size() > 0) {
-
-            filePathsFromMetadata.addAll(assayDataList
-                    .stream().map(AssayData::getFiles).collect(Collectors.toList())
-                    .stream().flatMap(List::stream).map(uk.ac.ebi.subs.data.component.File::getName)
-                    .collect(Collectors.toList()));
-        }
-
-        return filePathsFromMetadata;
+        return getFilenames(filePathsFromMetadata, assayDataList.size(), assayDataList
+                .stream().map(AssayData::getFiles));
     }
 
     private List<String> getFilesFromAnalysis(String submissionID) {
@@ -96,10 +90,13 @@ public class FileReferenceValidator {
         final List<uk.ac.ebi.subs.repository.model.Analysis> analysisList =
                 analysisRepository.findBySubmissionId(submissionID);
 
-        if (analysisList.size() > 0) {
+        return getFilenames(filePathsFromMetadata, analysisList.size(), analysisList
+                .stream().map(Analysis::getFiles));
+    }
 
-            filePathsFromMetadata.addAll(analysisList
-                    .stream().map(Analysis::getFiles).collect(Collectors.toList())
+    private List<String> getFilenames(List<String> filePathsFromMetadata, int size, Stream<List<uk.ac.ebi.subs.data.component.File>> listStream) {
+        if (size > 0) {
+            filePathsFromMetadata.addAll(listStream.collect(Collectors.toList())
                     .stream().flatMap(List::stream).map(uk.ac.ebi.subs.data.component.File::getName)
                     .collect(Collectors.toList()));
         }

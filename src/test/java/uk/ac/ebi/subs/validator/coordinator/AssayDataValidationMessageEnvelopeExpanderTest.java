@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@EnableMongoRepositories(basePackageClasses = {SampleRepository.class, AssayRepository.class, SubmissionRepository.class, SubmissionStatusRepository.class, ValidationResultRepository.class})
+@EnableMongoRepositories(basePackages = {"uk.ac.ebi.subs.repository.repos", "uk.ac.ebi.subs.validator.repository"})
 @EnableAutoConfiguration
 @SpringBootTest(classes = AssayDataValidationMessageEnvelopeExpander.class)
 public class AssayDataValidationMessageEnvelopeExpanderTest {

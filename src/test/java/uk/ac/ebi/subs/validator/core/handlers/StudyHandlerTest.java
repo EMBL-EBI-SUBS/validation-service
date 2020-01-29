@@ -20,6 +20,7 @@ import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -132,10 +133,8 @@ public class StudyHandlerTest {
         when(
                 referenceValidator.validate(study, dataType, projectRef, wrappedProject)
         ).thenReturn(
-                Arrays.asList(projectResult)
+                Collections.singletonList(projectResult)
         );
-
-
     }
 
     private void mockRepoCalls() {

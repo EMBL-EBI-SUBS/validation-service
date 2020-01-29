@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
@@ -19,18 +20,15 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.model.Submittable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ReferenceValidator.class)
 public class ReferenceValidatorTest {
 
+    private static final String SAME_AS_RELATIONSHIP_NATURE = "same as";
     @Autowired
     ReferenceValidator referenceValidator;
 
@@ -48,12 +46,12 @@ public class ReferenceValidatorTest {
     @Before
     public void setup () {
 
-        team = createTeam("TEAM_NAME");
+        team = createTeam(TEAM_NAME);
         entityUnderValidation.setId(EXPECTED_ID);
     }
 
     @Test
-    public void validateBySampleAcc() throws Exception {
+    public void whenReferencedSubmittableHasAccessionIDAndExistsInRepository_ThenValidationShouldPass() {
 
         Submittable<Sample> sample = createSample(team);
         SampleRef sampleRef = new SampleRef();
@@ -69,7 +67,7 @@ public class ReferenceValidatorTest {
     }
 
     @Test
-    public void validateBySampleAlias() throws Exception {
+    public void whenReferencedSubmittableHasAliasAndTeamAndExistsInRepository_ThenValidationShouldPass() {
         Submittable<Sample> sample = createSample(team);
         SampleRef sampleRef = new SampleRef();
         sampleRef.setAlias(sample.getAlias());
@@ -85,7 +83,7 @@ public class ReferenceValidatorTest {
     }
 
     @Test
-    public void validateBySampleAliasWith2SampleRelationshipWithoutAccession() {
+    public void when2ReferencedSubmittableHasSampleAliasButNoAccession_ThenValidationShouldPass() {
 
         final List<Submittable> sampleList = createSamplesWithoutAccession(team, 2);
 
@@ -109,7 +107,7 @@ public class ReferenceValidatorTest {
     }
 
     @Test
-    public void validateBySampleAliasWith2SampleRelationshipWithSameAccession() {
+    public void whenReferenced2SubmittableHasSameAccession_ThenValidationStillPass() {
         String sameAccession = UUID.randomUUID().toString();
         List<Submittable> sampleList = createSamples(team, 2);
         sampleList = sampleList.stream().map(sample -> {
@@ -118,8 +116,9 @@ public class ReferenceValidatorTest {
         }).collect(Collectors.toList());
 
         final List<AbstractSubsRef> sampleRefList = sampleList.stream().map(sample -> {
-            SampleRef sampleRef = new SampleRef();
+            SampleRelationship sampleRef = new SampleRelationship();
             sampleRef.setAccession(sample.getAccession());
+            sampleRef.setRelationshipNature(SAME_AS_RELATIONSHIP_NATURE);
             return sampleRef;
         }).collect(Collectors.toList());
 
@@ -127,22 +126,16 @@ public class ReferenceValidatorTest {
         List<SingleValidationResult> validationResults =
                 referenceValidator.validate(entityUnderValidation,dataType, sampleRefList, sampleList);
 
-        for (SingleValidationResult validationResult: validationResults) {
-            if (validationResult.getValidationStatus().equals(SingleValidationResultStatus.Error)) {
-                Assert.assertEquals(SingleValidationResultStatus.Error, validationResult.getValidationStatus());
-                Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
-                Assert.assertNotNull(validationResult.getMessage());
-                Assert.assertThat(validationResult.getMessage(),
-                        is(equalTo(String.format(ReferenceValidator.DUPLICATED_ACCESSION_MESSAGE, sameAccession))));
-                break;
-            }
+        validationResults.forEach( validationResult -> {
+            Assert.assertEquals(SingleValidationResultStatus.Pass, validationResult.getValidationStatus());
+            Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
+            Assert.assertNull(validationResult.getMessage());
 
-            Assert.fail("SingleValidationResult list should contain an ERROR result");
-        }
+        });
     }
 
     @Test
-    public void validateSampleWith2SampleRelationshipWithSameAliasAndTeamName() {
+    public void whenReferenced2SubmittableHasSameAliasAndTeamName_ThenValidationStillPass() {
         final String sameAlias = "same alias";
         final String sameTeamName = "same team name";
 
@@ -164,22 +157,16 @@ public class ReferenceValidatorTest {
         List<SingleValidationResult> validationResults =
                 referenceValidator.validate(entityUnderValidation,dataType, sampleRefList, sampleList);
 
-        for (SingleValidationResult validationResult: validationResults) {
-            if (validationResult.getValidationStatus().equals(SingleValidationResultStatus.Error)) {
-                Assert.assertEquals(SingleValidationResultStatus.Error, validationResult.getValidationStatus());
-                Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
-                Assert.assertNotNull(validationResult.getMessage());
-                Assert.assertThat(validationResult.getMessage(),
-                        is(equalTo(String.format(ReferenceValidator.DUPLICATED_ALIAS_PLUS_TEAM_MESSAGE, sameAlias, sameTeamName))));
-                break;
-            }
+        validationResults.forEach( validationResult -> {
+            Assert.assertEquals(SingleValidationResultStatus.Pass, validationResult.getValidationStatus());
+            Assert.assertEquals(EXPECTED_ID, validationResult.getEntityUuid());
+            Assert.assertNull(validationResult.getMessage());
 
-            Assert.fail("SingleValidationResult list should contain an ERROR result");
-        }
+        });
     }
 
     @Test
-    public void validateByNotSampleAcc() throws Exception {
+    public void whenReferencedSubmittableDefinedByAccessionButNotExists_ThenValidationShouldFail() {
         SampleRef sampleRef = new SampleRef();
         sampleRef.setAccession(UUID.randomUUID().toString());
 
@@ -194,7 +181,7 @@ public class ReferenceValidatorTest {
     }
 
     @Test
-    public void validateByNotSampleAlias() throws Exception {
+    public void whenReferencedSubmittableDefinedByAliasAndTeamButNotExists_ThenValidationShouldFail() {
         SampleRef sampleRef = new SampleRef();
         sampleRef.setAlias(UUID.randomUUID().toString());
         sampleRef.setTeam(team.getName());
@@ -207,7 +194,7 @@ public class ReferenceValidatorTest {
     }
 
     @Test
-    public void validateSampleRefNotinList() throws Exception {
+    public void whenReferencedSamplesContainsOneNonExistingSample_ThenShouldBeExactlyOneError() {
         final List<Submittable> sampleList = createSamples(team, 10);
 
         final List<AbstractSubsRef> sampleRefList = sampleList.stream().map(sample -> {
