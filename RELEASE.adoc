@@ -1,0 +1,18 @@
+= [.ebi-color]#Release notes#
+:toc: auto
+
+This pages contains links to release notes for DSP's Validation Service.
+
+[[section]]
+== v2.25.0 Release notes
+
+New features:
+---------------
+1. Add possibility to search referenced samples outside of DSP. Previously samples could be only referenced if they were submitted via DSP.
+2. Allow to have duplicates in sample relationships. This change makes the submission a bit more user-friendly.
+---------------
+
+Platform upgrades:
+--------------------
+1. DSP's Validation Service now runs on Java 11 (Open JDK 11).
+--------------------
