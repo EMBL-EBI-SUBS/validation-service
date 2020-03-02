@@ -3,8 +3,10 @@ package uk.ac.ebi.subs.validator.schema.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class SchemaValidationMessageEnvelope {
 
     private String validationResultUUID;
