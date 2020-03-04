@@ -1,10 +1,19 @@
-= [.ebi-color]#Release notes#
+= [.ebi-color]#Release Notes#
 :toc: auto
 
 This pages contains links to release notes for DSP's Validation Service.
 
 [[section]]
-== v2.25.0 Release notes
+== v2.25.1 Release Notes
+
+Bugfix:
+---------
+1. When a user wanted to delete an element of their Draft stated submission they failed. The element could not be deleted. The problem was that some data transfer object missed their no argument constructor, so they were not serialisable. This has been fixed.
+
+---------
+
+[[section]]
+== v2.25.0 Release Notes
 
 New features:
 ---------------
