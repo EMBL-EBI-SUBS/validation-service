@@ -42,6 +42,10 @@ public class StudyHandler extends AbstractHandler<StudyValidationMessageEnvelope
 
         DataType dataType = getDataTypeFromRepository(envelope.getDataTypeId());
 
+        if (envelope.getProject() == null) {
+            return new ArrayList<>();
+        }
+
         return new ArrayList<>(referenceValidator.validate(study, dataType, study.getProjectRef(), envelope.getProject()));
     }
 }
