@@ -17,7 +17,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.28.1-SNAPSHOT'
+version '2.28.1'
 
 mainClassName = 'uk.ac.ebi.subs.ValidationServiceApplication'
 
