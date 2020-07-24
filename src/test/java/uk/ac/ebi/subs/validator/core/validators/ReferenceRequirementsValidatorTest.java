@@ -6,11 +6,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.submittable.Assay;
+import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleGroupRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.core.handlers.ValidationTestHelper;
@@ -231,6 +235,42 @@ public class ReferenceRequirementsValidatorTest {
         this.validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, reference, referencedEntity);
     }
 
+    @Test
+    public void testSampleReferencingWhenSampleGroupRepositoryIsPresent() {
+        SampleRef sampleRef = new SampleRef();
+
+        Set<String> requiredValidationAuthors = new HashSet<>();
+        requiredValidationAuthors.add(ValidationAuthor.Ena.name());
+
+        DataType.RefRequirement refRequirement = new DataType.RefRequirement();
+        refRequirement.setRefClassName(sampleRef.getClass().getName());
+        refRequirement.setDataTypeIdForReferencedDocument("barId");
+        refRequirement.setAdditionalRequiredValidationAuthors(requiredValidationAuthors);
+
+        Set<DataType.RefRequirement> refRequirements = new HashSet<>();
+        refRequirements.add(refRequirement);
+
+        DataType dataTypeOfEntityUnderValidation = new DataType();
+        dataTypeOfEntityUnderValidation.setRefRequirements(refRequirements);
+
+        Sample refEntity = new Sample();
+        refEntity.setId("fooId");
+
+        SampleRepository sampleRepository = Mockito.mock(SampleRepository.class);
+        Mockito.when(sampleRepository.findOne(refEntity.getId())).thenReturn(
+                buildStoredSample(refEntity.getId(), refRequirement.getDataTypeIdForReferencedDocument(),
+                        Collections.singletonList(ValidationAuthor.Ena), Collections.emptyList(), Collections.emptyList()));
+
+        Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> repositoryMap = new HashMap<>();
+        repositoryMap.put(uk.ac.ebi.subs.repository.model.Sample.class, sampleRepository);
+        repositoryMap.put(uk.ac.ebi.subs.repository.model.SampleGroup.class, Mockito.mock(SampleGroupRepository.class));
+
+        ReferenceRequirementsValidator validator = new ReferenceRequirementsValidator(repositoryMap, validationResultRepository);
+        validator.setMaximumTimeToWaitInMillis(3000);
+
+        List<SingleValidationResult> results = validator.validate(entityUnderValidation, dataTypeOfEntityUnderValidation, sampleRef, refEntity);
+        Assert.assertTrue(results.isEmpty());
+    }
 
     private uk.ac.ebi.subs.repository.model.Study buildStoredStudy(String id, String dataTypeId, Collection<ValidationAuthor> passingAuthors, Collection<ValidationAuthor> failingAuthors, Collection<ValidationAuthor> pendingAuthors) {
         uk.ac.ebi.subs.repository.model.Study storedStudy = new uk.ac.ebi.subs.repository.model.Study();
@@ -257,4 +297,31 @@ public class ReferenceRequirementsValidatorTest {
         return storedStudy;
     }
 
+    private uk.ac.ebi.subs.repository.model.Sample buildStoredSample(
+            String id, String dataTypeId, Collection<ValidationAuthor> passingAuthors,
+            Collection<ValidationAuthor> failingAuthors, Collection<ValidationAuthor> pendingAuthors) {
+        DataType dt = new DataType();
+        dt.setId(dataTypeId);
+
+        Map<ValidationAuthor, List<SingleValidationResult>> results = new HashMap<>();
+        for (ValidationAuthor a : passingAuthors) {
+            results.put(a, Collections.singletonList(ValidationTestHelper.pass(id, a)));
+        }
+        for (ValidationAuthor a : failingAuthors) {
+            results.put(a, Collections.singletonList(ValidationTestHelper.fail(id, a)));
+        }
+        for (ValidationAuthor a : pendingAuthors) {
+            results.put(a, Collections.emptyList());
+        }
+
+        ValidationResult vr = new ValidationResult();
+        vr.setUuid("iamatestvr");
+        vr.setExpectedResults(results);
+
+        uk.ac.ebi.subs.repository.model.Sample storedSample = new uk.ac.ebi.subs.repository.model.Sample();
+        storedSample.setDataType(dt);
+        storedSample.setValidationResult(vr);
+
+        return storedSample;
+    }
 }
