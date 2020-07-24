@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.AbstractSubsRef;
+import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -206,17 +207,20 @@ public class ReferenceRequirementsValidator {
     private Pair<DataType, ValidationResult> fetchDataTypeAndValidationResult(Submittable submittable) {
 
         SubmittableRepository<? extends StoredSubmittable> repo = null;
-        Class<?> submittableClass = submittable.getClass();
+        Class<? extends Submittable> submittableClass = submittable.getClass();
 
         if (submittable instanceof uk.ac.ebi.subs.validator.model.Submittable) {
             submittableClass = ((uk.ac.ebi.subs.validator.model.Submittable<?>) submittable).getBaseSubmittable().getClass();
         }
 
         for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
-            Class<?> repositoryModelClass = entry.getKey();
+            Class<? extends StoredSubmittable> repositoryModelClass = entry.getKey();
 
             if (submittableClass.isAssignableFrom(repositoryModelClass)) {
-                repo = entry.getValue();
+                if (makeSureSampleIsNotConfusedWithSampleGroup(submittableClass, repositoryModelClass)) {
+                    repo = entry.getValue();
+                    break;
+                }
             }
         }
 
@@ -232,4 +236,22 @@ public class ReferenceRequirementsValidator {
         return null;
     }
 
+    /**
+     * The recent addition of SampleGroup models and repository causes an issue where SampleGroupRepository might
+     * wrongly get chosen for Sample documents. This is because SampleGroup is a child class of Sample.
+     * This method considers this problem and resolves it appropriately.<br/>
+     * <br/>
+     * Note:<br/>
+     * This is not an ideal workaround but considering the codebase is not gonna be supported anymore this should be enough
+     * to fix the issue for now.
+     */
+    private boolean makeSureSampleIsNotConfusedWithSampleGroup(
+            Class<? extends Submittable> submittableClass, Class<? extends StoredSubmittable> repositoryModelClass) {
+
+        if (submittableClass != Sample.class || repositoryModelClass == uk.ac.ebi.subs.repository.model.Sample.class) {
+            return true;
+        }
+
+        return false;
+    }
 }
